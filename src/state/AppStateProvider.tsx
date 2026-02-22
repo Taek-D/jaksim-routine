@@ -26,7 +26,7 @@ import {
   loadAppState,
   saveAppState,
 } from "../storage/appStateRepository";
-import { entitlementBackendStub } from "../backend/stub";
+import { entitlementBackend } from "../backend";
 import { trackEvent } from "../analytics/analytics";
 import {
   completeIapProductGrant,
@@ -212,8 +212,8 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   }, [resolveUserKeyHash]);
 
   const syncEntitlementSnapshot = useCallback(async (userKeyHash: string) => {
-    const gate = await entitlementBackendStub.getTrialGate(userKeyHash);
-    const entitlement = await entitlementBackendStub.getPurchaseEntitlement(userKeyHash);
+    const gate = await entitlementBackend.getTrialGate(userKeyHash);
+    const entitlement = await entitlementBackend.getPurchaseEntitlement(userKeyHash);
     setState((prev) => ({
       ...prev,
       entitlement: {
@@ -231,20 +231,20 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     async (userKeyHash: string): Promise<number> => {
       const runtimePendingOrders = await getIapPendingOrders();
       for (const runtimeOrder of runtimePendingOrders) {
-        await entitlementBackendStub.registerPendingOrder(userKeyHash, runtimeOrder);
+        await entitlementBackend.registerPendingOrder(userKeyHash, runtimeOrder);
       }
       const runtimeOrderHistory = await getIapCompletedOrRefundedOrders();
       for (const historyItem of runtimeOrderHistory) {
-        await entitlementBackendStub.registerCompletedOrRefundedOrder(userKeyHash, historyItem);
+        await entitlementBackend.registerCompletedOrRefundedOrder(userKeyHash, historyItem);
       }
 
-      const pendingOrders = await entitlementBackendStub.getPendingOrders(userKeyHash);
+      const pendingOrders = await entitlementBackend.getPendingOrders(userKeyHash);
       const runtimePendingOrderIdSet = new Set(
         runtimePendingOrders.map((order) => order.orderId)
       );
       let restoredCount = 0;
       for (const order of pendingOrders) {
-        const grant = await entitlementBackendStub.processProductGrant(
+        const grant = await entitlementBackend.processProductGrant(
           userKeyHash,
           order.orderId,
           order.sku
@@ -252,7 +252,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         if (!grant.granted) {
           continue;
         }
-        const complete = await entitlementBackendStub.completeProductGrant(userKeyHash, order.orderId);
+        const complete = await entitlementBackend.completeProductGrant(userKeyHash, order.orderId);
         if (complete.completed) {
           if (runtimePendingOrderIdSet.has(order.orderId)) {
             void completeIapProductGrant(order.orderId);
@@ -264,13 +264,13 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       let revokedOrderSku: string | undefined;
       let revokedAt: string | undefined;
 
-      const orderHistory = await entitlementBackendStub.getCompletedOrRefundedOrders(userKeyHash);
+      const orderHistory = await entitlementBackend.getCompletedOrRefundedOrders(userKeyHash);
       const refundedOrders = orderHistory
         .filter((item) => item.status === "REFUNDED")
         .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
       if (refundedOrders.length > 0) {
-        const entitlement = await entitlementBackendStub.getPurchaseEntitlement(userKeyHash);
+        const entitlement = await entitlementBackend.getPurchaseEntitlement(userKeyHash);
         const refundedByOrderId = new Map(
           refundedOrders.map((item) => [item.orderId, item] as const)
         );
@@ -286,7 +286,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
         if (refundedCurrentOrder || hasLegacyPremiumWithoutOrderId) {
           const targetOrder = refundedCurrentOrder ?? latestRefundedOrder;
-          await entitlementBackendStub.revokePurchaseEntitlement(userKeyHash);
+          await entitlementBackend.revokePurchaseEntitlement(userKeyHash);
           revokedOrderId = targetOrder.orderId;
           revokedOrderSku = targetOrder.sku;
           revokedAt = targetOrder.updatedAt;
@@ -522,12 +522,12 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
   const startFreeTrial = useCallback(async () => {
     const userKeyHash = await ensureUserKeyHash();
-    const gate = await entitlementBackendStub.getTrialGate(userKeyHash);
+    const gate = await entitlementBackend.getTrialGate(userKeyHash);
     if (gate.trialUsed || state.entitlement.trialUsedLocal) {
       return { ok: false as const, reason: "ALREADY_USED" as const };
     }
 
-    const trial = await entitlementBackendStub.startTrial(userKeyHash);
+    const trial = await entitlementBackend.startTrial(userKeyHash);
     setState((prev) => ({
       ...prev,
       entitlement: {
@@ -551,18 +551,18 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     const userKeyHash = await ensureUserKeyHash();
     const runtimeOrder = await createIapOrder(sku);
     if (runtimeOrder) {
-      await entitlementBackendStub.registerPendingOrder(userKeyHash, runtimeOrder);
+      await entitlementBackend.registerPendingOrder(userKeyHash, runtimeOrder);
     }
     let order =
-      runtimeOrder ?? (await entitlementBackendStub.createOneTimePurchaseOrder(userKeyHash, sku));
-    let grant = await entitlementBackendStub.processProductGrant(
+      runtimeOrder ?? (await entitlementBackend.createOneTimePurchaseOrder(userKeyHash, sku));
+    let grant = await entitlementBackend.processProductGrant(
       userKeyHash,
       order.orderId,
       order.sku
     );
     if (!grant.granted) {
-      order = await entitlementBackendStub.createOneTimePurchaseOrder(userKeyHash, sku);
-      grant = await entitlementBackendStub.processProductGrant(
+      order = await entitlementBackend.createOneTimePurchaseOrder(userKeyHash, sku);
+      grant = await entitlementBackend.processProductGrant(
         userKeyHash,
         order.orderId,
         order.sku
@@ -576,7 +576,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         errorCode: "GRANT_REJECTED",
       };
     }
-    const complete = await entitlementBackendStub.completeProductGrant(userKeyHash, order.orderId);
+    const complete = await entitlementBackend.completeProductGrant(userKeyHash, order.orderId);
     if (!complete.completed) {
       return {
         ok: false as const,
@@ -588,7 +588,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     if (runtimeOrder) {
       void completeIapProductGrant(runtimeOrder.orderId);
     }
-    const entitlement = await entitlementBackendStub.getPurchaseEntitlement(userKeyHash);
+    const entitlement = await entitlementBackend.getPurchaseEntitlement(userKeyHash);
 
     setState((prev) => ({
       ...prev,

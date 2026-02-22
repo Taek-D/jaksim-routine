@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { trackEvent } from "../analytics/analytics";
 import type { CompletedOrRefundedOrderRecord } from "../backend/contracts";
-import { entitlementBackendStub } from "../backend/stub";
+import { entitlementBackend } from "../backend";
 import { useAppState } from "../state/AppStateProvider";
 
 const DEFAULT_USER_KEY_HASH = "local-user";
@@ -14,7 +14,7 @@ export default function EntitlementHistoryPage() {
 
   useEffect(() => {
     const userKeyHash = state.entitlement.lastKnownUserKeyHash ?? DEFAULT_USER_KEY_HASH;
-    entitlementBackendStub.getCompletedOrRefundedOrders(userKeyHash).then((items) => {
+    entitlementBackend.getCompletedOrRefundedOrders(userKeyHash).then((items) => {
       const sorted = [...items].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
       setRecords(sorted);
       trackEvent("entitlement_history_view", { count: sorted.length });

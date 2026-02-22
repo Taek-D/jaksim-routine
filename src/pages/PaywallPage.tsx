@@ -1,6 +1,6 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { entitlementBackendStub } from "../backend/stub";
+import { entitlementBackend } from "../backend";
 import type { ProductItem } from "../backend/contracts";
 import { useAppState } from "../state/AppStateProvider";
 import { trackEvent } from "../analytics/analytics";
@@ -35,7 +35,7 @@ export default function PaywallPage() {
         return;
       }
 
-      const stubProducts = await entitlementBackendStub.getProductItems();
+      const stubProducts = await entitlementBackend.getProductItems();
       if (cancelled) {
         return;
       }

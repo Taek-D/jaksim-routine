@@ -3,4 +3,6 @@ dist
 .DS_Store
 *.log
 pnpm-lock.yaml
+.env
+.env.local
 
