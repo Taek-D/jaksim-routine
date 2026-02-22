@@ -5,4 +5,5 @@ dist
 pnpm-lock.yaml
 .env
 .env.local
+.playwright-mcp/
 

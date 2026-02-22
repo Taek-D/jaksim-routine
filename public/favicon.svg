@@ -1,0 +1,24 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="128" fill="url(#bg-gradient)"/>
+  
+  <path d="M256 88 C 256 88, 128 226.5 128 340.5 C 128 411 185.3 468.4 256 468.4 C 326.5 468.4 383.8 411 383.8 340.5 C 383.8 256.4 290.4 179.6 256 88 Z" fill="url(#flame-grad)"/>
+
+  <path d="M256 232 C 256 232, 183.6 307.4 183.6 361.5 C 183.6 401.4 216 433.8 256 433.8 C 295.8 433.8 328.2 401.4 328.2 361.5 C 328.2 292.1 256 232 256 232 Z" fill="url(#inner-grad)"/>
+
+  <path stroke="#FFFFFF" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M210 365 L 245 400 L 310 325" />
+
+  <defs>
+    <linearGradient id="bg-gradient" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF5F3"/>
+      <stop offset="1" stop-color="#FFE4DF"/>
+    </linearGradient>
+    <linearGradient id="flame-grad" x1="256" y1="88" x2="256" y2="468" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF756B"/>
+      <stop offset="1" stop-color="#FF3B3B"/>
+    </linearGradient>
+    <linearGradient id="inner-grad" x1="256" y1="232" x2="256" y2="433" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFDE4D"/>
+      <stop offset="1" stop-color="#FF9B26"/>
+    </linearGradient>
+  </defs>
+</svg>

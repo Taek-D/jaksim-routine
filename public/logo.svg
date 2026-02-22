@@ -1,0 +1,38 @@
+<svg width="600" height="600" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background Gradient (Vibrant Brand Red/Orange) - no white bg allowed per Toss guidelines -->
+    <linearGradient id="bg" x1="0" y1="0" x2="600" y2="600" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF3B3B"/>
+      <stop offset="100%" stop-color="#E50050"/>
+    </linearGradient>
+    
+    <!-- Outer Flame gradient (White/Bright Warm) - simple shape to stand out against bg -->
+    <linearGradient id="flame" x1="300" y1="100" x2="300" y2="540" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FFDFDF"/>
+    </linearGradient>
+    
+    <!-- Inner Flame gradient (Warm Yellow/Orange) -->
+    <linearGradient id="flame-inner" x1="300" y1="230" x2="300" y2="470" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFD600"/>
+      <stop offset="100%" stop-color="#FF8A00"/>
+    </linearGradient>
+
+    <!-- Drop shadow for depth -->
+    <filter id="shadow" x="100" y="80" width="400" height="480" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="12" stdDeviation="15" flood-color="#800018" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Solid Background (Full bleed 600x600 square) -->
+  <rect width="600" height="600" fill="url(#bg)"/>
+
+  <!-- Flame Shape (Centered in 600x600, bounded to circular crop safety) -->
+  <path d="M300 100 C 300 100, 150 260 150 390 C 150 472.8 217.2 540 300 540 C 382.8 540 450 472.8 450 390 C 450 280 350 180 300 100 Z" fill="url(#flame)" filter="url(#shadow)"/>
+
+  <!-- Inner Flame -->
+  <path d="M300 230 C 300 230, 220 320 220 390 C 220 434.2 255.8 470 300 470 C 344.2 470 380 434.2 380 390 C 380 320 300 230 300 230 Z" fill="url(#flame-inner)"/>
+
+  <!-- Checkmark in the center -->
+  <path stroke="#E50050" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M245 400 L 285 440 L 365 340" />
+</svg>
