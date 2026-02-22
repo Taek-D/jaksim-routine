@@ -1,0 +1,44 @@
+{
+  "timestamp": "2026-02-22T12:39:11.674Z",
+  "reason": "compaction",
+  "status": {
+    "version": "2.0",
+    "lastUpdated": "2026-02-22T12:45:00.000Z",
+    "activeFeatures": [
+      "mvp-launch"
+    ],
+    "primaryFeature": "mvp-launch",
+    "features": {
+      "mvp-launch": {
+        "phase": "design",
+        "planPath": "docs/01-plan/features/mvp-launch.plan.md",
+        "designPath": "docs/02-design/features/mvp-launch.design.md",
+        "prdPath": "docs/PRD.md",
+        "startedAt": "2026-02-22T12:30:00.000Z",
+        "lastActivity": "2026-02-22T12:45:00.000Z"
+      }
+    },
+    "pipeline": {
+      "currentPhase": 1,
+      "level": "Dynamic",
+      "phaseHistory": []
+    },
+    "session": {
+      "startedAt": "2026-02-22T07:15:07.533Z",
+      "onboardingCompleted": true,
+      "lastActivity": "2026-02-22T12:45:00.000Z"
+    },
+    "history": [
+      {
+        "action": "plan_created",
+        "feature": "mvp-launch",
+        "timestamp": "2026-02-22T12:30:00.000Z"
+      },
+      {
+        "action": "design_created",
+        "feature": "mvp-launch",
+        "timestamp": "2026-02-22T12:45:00.000Z"
+      }
+    ]
+  }
+}
