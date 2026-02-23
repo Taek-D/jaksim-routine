@@ -10,5 +10,9 @@ pnpm-lock.yaml
 .claude/agent-memory/
 .granite/
 zip (1)/
-.bkit/agent-state.json
+.bkit/
+docs/.bkit-memory.json
+docs/.pdca-snapshots/
+docs/.pdca-status.json
 qa-*.png
+앱등록사진/
