@@ -1,8 +1,10 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAppState } from "../state/AppStateProvider";
 import { resolveNextPathFromSearch } from "../app/deeplink";
 import { trackEvent } from "../analytics/analytics";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "motion/react";
 
 const onboardingSlides = [
   {
@@ -54,33 +56,73 @@ export default function OnboardingPage() {
   };
 
   return (
-    <section className="screen centered">
-      <div className="card">
-        <p className="hero-emoji">{slide.emoji}</p>
-        <h1 className="heading">{slide.title}</h1>
-        <p className="muted">{slide.description}</p>
+    <div className="flex flex-col h-full bg-white relative overflow-hidden">
+      {/* Indicators */}
+      <div className="absolute top-12 left-0 right-0 flex justify-center gap-2 z-20">
+        {onboardingSlides.map((_, i) => (
+          <div
+            key={i}
+            className={cn(
+              "h-2 rounded-full transition-all duration-300",
+              i === index ? "w-5 bg-[#111827]" : "w-2 bg-gray-200"
+            )}
+          />
+        ))}
+      </div>
 
-        {!isLast && (
-          <button className="primary-button" type="button" onClick={() => setIndex((prev) => prev + 1)}>
+      {/* Slides */}
+      <div className="flex-1 relative flex items-center justify-center">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col items-center text-center px-8"
+          >
+            <div className="w-[160px] h-[160px] bg-gray-50 rounded-full flex items-center justify-center mb-8 shadow-sm">
+              <span className="text-[72px] select-none">{slide.emoji}</span>
+            </div>
+            <h1 className="text-[22px] font-bold text-[#101828] mb-3 leading-tight">
+              {slide.title}
+            </h1>
+            <p className="text-[15px] text-gray-500 leading-relaxed">
+              {slide.description}
+            </p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Footer Action */}
+      <div className="w-full px-6 pb-12 pt-4 z-20">
+        {!isLast ? (
+          <button
+            className="w-full h-[56px] rounded-[18px] bg-[#111827] text-white text-[16px] font-bold shadow-lg shadow-gray-900/10 active:scale-[0.98] transition-transform flex items-center justify-center"
+            type="button"
+            onClick={() => setIndex((prev) => prev + 1)}
+          >
             다음
           </button>
-        )}
-
-        {isLast && (
-          <div className="button-row">
+        ) : (
+          <>
             <button
-              className="primary-button"
+              className="w-full h-[56px] rounded-[18px] bg-[#111827] text-white text-[16px] font-bold shadow-lg shadow-gray-900/10 active:scale-[0.98] transition-transform flex items-center justify-center"
               type="button"
               onClick={() => completeAndNavigate(nextPath ?? "/routine/new")}
             >
               루틴 시작하기
             </button>
-            <button className="secondary-button" type="button" onClick={goHome}>
+            <button
+              className="w-full mt-3 text-gray-400 text-[14px] font-medium h-[40px] hover:text-gray-600 transition-colors"
+              type="button"
+              onClick={goHome}
+            >
               나중에
             </button>
-          </div>
+          </>
         )}
       </div>
-    </section>
+    </div>
   );
 }
