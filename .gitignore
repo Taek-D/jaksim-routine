@@ -11,3 +11,4 @@ pnpm-lock.yaml
 .granite/
 zip (1)/
 .bkit/agent-state.json
+qa-*.png
