@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import type { ReactNode, ErrorInfo } from "react";
+import type { ReactNode } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { TDSMobileAITProvider } from "@toss/tds-mobile-ait";
@@ -16,7 +16,7 @@ class TDSErrorBoundary extends Component<
     return { hasError: true };
   }
 
-  componentDidCatch(_error: Error, _info: ErrorInfo) {
+  componentDidCatch() {
     // TDS provider fails outside Toss app — fall through to children only
   }
 
