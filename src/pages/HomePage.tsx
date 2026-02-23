@@ -43,7 +43,10 @@ export default function HomePage() {
     dismissRefundRevokedBanner,
     checkinRoutine,
     addNoteToCheckin,
+    deleteRoutine,
   } = useAppState();
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const hasTrackedHomeViewRef = useRef(false);
   const [noteTarget, setNoteTarget] = useState<RoutineActionTarget | null>(null);
   const [skipTarget, setSkipTarget] = useState<RoutineActionTarget | null>(null);
@@ -63,6 +66,46 @@ export default function HomePage() {
   const totalCount = todayRoutines.length;
   const progress = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
   const greeting = getGreeting(getKstHour(), progress, topStreak, totalCount);
+
+  const enterSelectMode = () => {
+    setIsSelectMode(true);
+    setSelectedIds(new Set());
+  };
+
+  const exitSelectMode = () => {
+    setIsSelectMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === todayRoutines.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(todayRoutines.map((r) => r.id)));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedIds.size === 0) return;
+    const confirmed = window.confirm(`${selectedIds.size}개 루틴을 삭제할까요? 삭제하면 되돌릴 수 없어요.`);
+    if (!confirmed) return;
+    for (const id of selectedIds) {
+      deleteRoutine(id);
+    }
+    exitSelectMode();
+  };
 
   useEffect(() => {
     if (hasTrackedHomeViewRef.current) {
@@ -175,12 +218,23 @@ export default function HomePage() {
           <section className="flex flex-col gap-1 mt-2 px-1">
             <div className="flex items-center justify-between">
               <h1 className="text-[22px] font-bold text-[#101828]">{getKstLongDateLabel()}</h1>
-              {topStreak > 0 && (
-                <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-full border border-orange-100">
-                  <Icon name="local_fire_department" size={16} className="text-orange-600" />
-                  <span className="text-[13px] font-bold text-orange-700">최고 {topStreak}일</span>
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                {topStreak > 0 && !isSelectMode && (
+                  <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-full border border-orange-100">
+                    <Icon name="local_fire_department" size={16} className="text-orange-600" />
+                    <span className="text-[13px] font-bold text-orange-700">최고 {topStreak}일</span>
+                  </div>
+                )}
+                {todayRoutines.length > 0 && (
+                  <button
+                    className="text-[14px] font-medium text-gray-500 hover:text-gray-700 transition-colors px-2 py-1"
+                    type="button"
+                    onClick={isSelectMode ? exitSelectMode : enterSelectMode}
+                  >
+                    {isSelectMode ? "취소" : "편집"}
+                  </button>
+                )}
+              </div>
             </div>
             <p className="text-[#475467] text-[15px]">{greeting}</p>
           </section>
@@ -319,6 +373,9 @@ export default function HomePage() {
                     canSwipe={canSwipe}
                     showInlineMemo={showInlineMemo}
                     inlineMemoText={inlineMemoText}
+                    isSelectMode={isSelectMode}
+                    isSelected={selectedIds.has(routine.id)}
+                    onToggleSelect={() => toggleSelect(routine.id)}
                     onInlineMemoChange={setInlineMemoText}
                     onInlineMemoSubmit={() => submitInlineMemo(routine.id)}
                     onInlineMemoDismiss={dismissInlineMemo}
@@ -345,24 +402,55 @@ export default function HomePage() {
 
         {/* Floating Bottom Bar */}
         <div className="fixed bottom-[76px] w-full max-w-[640px] px-4 pointer-events-none z-40">
-          <div className="flex gap-3 pointer-events-auto">
-            <button
-              className="flex-1 h-[52px] rounded-2xl bg-[#111827] text-white text-[16px] font-bold shadow-lg shadow-gray-900/10 flex items-center justify-center gap-2 active:scale-95 transition-transform"
-              type="button"
-              onClick={() => navigate("/routine/new")}
-            >
-              <Icon name="add" size={20} />
-              루틴 추가
-            </button>
-            <button
-              className="flex-1 h-[52px] rounded-2xl bg-white border border-gray-200 text-[#344054] text-[16px] font-bold shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
-              type="button"
-              onClick={() => navigate("/report")}
-            >
-              <Icon name="bar_chart" size={20} />
-              주간 리포트
-            </button>
-          </div>
+          {isSelectMode ? (
+            <div className="flex items-center gap-3 pointer-events-auto">
+              <button
+                className="flex items-center gap-1.5 h-[52px] px-4 rounded-2xl bg-white border border-gray-200 text-[14px] font-medium text-[#344054] shadow-sm active:scale-95 transition-transform shrink-0"
+                type="button"
+                onClick={toggleSelectAll}
+              >
+                <Icon
+                  name={selectedIds.size === todayRoutines.length ? "check_box" : "check_box_outline_blank"}
+                  size={18}
+                  className={selectedIds.size === todayRoutines.length ? "text-[#111827]" : "text-gray-400"}
+                />
+                전체 선택
+              </button>
+              <button
+                className={cn(
+                  "flex-1 h-[52px] rounded-2xl text-white text-[16px] font-bold shadow-lg flex items-center justify-center gap-2 transition-all",
+                  selectedIds.size > 0
+                    ? "bg-red-500 shadow-red-500/20 active:scale-95"
+                    : "bg-gray-300 cursor-not-allowed"
+                )}
+                type="button"
+                disabled={selectedIds.size === 0}
+                onClick={handleBatchDelete}
+              >
+                <Icon name="delete" size={20} />
+                {selectedIds.size}개 삭제
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-3 pointer-events-auto">
+              <button
+                className="flex-1 h-[52px] rounded-2xl bg-[#111827] text-white text-[16px] font-bold shadow-lg shadow-gray-900/10 flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                type="button"
+                onClick={() => navigate("/routine/new")}
+              >
+                <Icon name="add" size={20} />
+                루틴 추가
+              </button>
+              <button
+                className="flex-1 h-[52px] rounded-2xl bg-white border border-gray-200 text-[#344054] text-[16px] font-bold shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                type="button"
+                onClick={() => navigate("/report")}
+              >
+                <Icon name="bar_chart" size={20} />
+                주간 리포트
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -405,6 +493,9 @@ interface RoutineCardProps {
   canSwipe: boolean;
   showInlineMemo: boolean;
   inlineMemoText: string;
+  isSelectMode: boolean;
+  isSelected: boolean;
+  onToggleSelect: () => void;
   onInlineMemoChange: (text: string) => void;
   onInlineMemoSubmit: () => void;
   onInlineMemoDismiss: () => void;
@@ -424,6 +515,9 @@ function RoutineCard({
   canSwipe,
   showInlineMemo,
   inlineMemoText,
+  isSelectMode,
+  isSelected,
+  onToggleSelect,
   onInlineMemoChange,
   onInlineMemoSubmit,
   onInlineMemoDismiss,
@@ -431,6 +525,7 @@ function RoutineCard({
   onOpenNote,
   onSkip,
 }: RoutineCardProps) {
+  const effectiveCanSwipe = canSwipe && !isSelectMode;
   const x = useMotionValue(0);
   const rightHintOpacity = useTransform(x, [0, SWIPE_THRESHOLD], [0, 1]);
   const leftHintOpacity = useTransform(x, [-SWIPE_THRESHOLD, 0], [1, 0]);
@@ -444,9 +539,24 @@ function RoutineCard({
   };
 
   return (
-    <div className="relative">
+    <div className="relative flex items-stretch gap-0">
+      {/* Select mode checkbox */}
+      {isSelectMode && (
+        <button
+          type="button"
+          className="flex items-center justify-center w-10 shrink-0 self-center"
+          onClick={onToggleSelect}
+        >
+          <Icon
+            name={isSelected ? "check_box" : "check_box_outline_blank"}
+            size={24}
+            className={isSelected ? "text-[#111827]" : "text-gray-300"}
+          />
+        </button>
+      )}
+
       {/* Swipe hint layers */}
-      {canSwipe && (
+      {effectiveCanSwipe && (
         <>
           <motion.div
             className="absolute inset-0 rounded-[20px] bg-emerald-100 flex items-center pl-5 pointer-events-none"
@@ -467,12 +577,13 @@ function RoutineCard({
         layout
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        drag={canSwipe ? "x" : false}
+        drag={effectiveCanSwipe ? "x" : false}
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.4}
-        onDragEnd={canSwipe ? handleDragEnd : undefined}
-        style={canSwipe ? { x } : undefined}
+        onDragEnd={effectiveCanSwipe ? handleDragEnd : undefined}
+        style={effectiveCanSwipe ? { x } : undefined}
         className={cn(
+          "flex-1",
           "bg-white rounded-[20px] p-5 shadow-sm flex flex-col gap-4 relative overflow-hidden transition-all border border-transparent border-l-4",
           color.accent,
           isCompleted && "bg-emerald-50/60 border-emerald-100 shadow-emerald-100/50"
@@ -517,7 +628,7 @@ function RoutineCard({
               )}
             </div>
           </div>
-          {!isCompleted && !isSkipped && (
+          {!isCompleted && !isSkipped && !isSelectMode && (
             <Link to={`/routine/${routineId}`} className="text-gray-400 hover:text-gray-600">
               <Icon name="more_horiz" />
             </Link>
@@ -566,7 +677,7 @@ function RoutineCard({
           )}
         </AnimatePresence>
 
-        {!isCompleted && (
+        {!isCompleted && !isSelectMode && (
           <div className="grid grid-cols-[1fr_auto_auto] gap-2 z-10">
             {isSkipped ? (
               <button
