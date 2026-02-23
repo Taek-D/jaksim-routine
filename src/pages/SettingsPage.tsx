@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppState } from "../state/AppStateProvider";
-import { openExternalUrl, shareMiniAppLink } from "../integrations/tossSdk";
+import { openExternalUrl } from "../integrations/tossSdk";
 import { trackEvent } from "../analytics/analytics";
 import { appConfig, buildSupportMailto } from "../config/appConfig";
 import { Icon } from "../components/Icon";
@@ -91,7 +91,6 @@ export default function SettingsPage() {
           <h2 className="text-[13px] font-semibold text-gray-500 mb-2 px-1">고객 지원</h2>
           <div className="bg-white rounded-[14px] border border-gray-200 overflow-hidden shadow-sm">
             {[
-              { icon: "share", label: "친구에게 공유하기", onClick: () => { void shareMiniAppLink({ title: "작심루틴", text: "오늘 체크인하고 2주 루틴을 이어가요.", url: "intoss://jaksim-routine/home" }); } },
               { icon: "mail", label: "이메일 문의", onClick: () => { void openExternalUrl(buildSupportMailto("[작심루틴] 문의"), { fallback: "none" }); } },
               { icon: "description", label: "이용약관", onClick: () => { void openExternalUrl(appConfig.termsUrl, { fallback: "none" }); } },
               { icon: "lock", label: "개인정보 처리방침", onClick: () => { void openExternalUrl(appConfig.privacyUrl, { fallback: "none" }); } },

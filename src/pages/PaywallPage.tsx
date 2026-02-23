@@ -136,7 +136,7 @@ export default function PaywallPage() {
           <p className="text-[15px] text-gray-500 leading-relaxed">
             현재 <span className="font-semibold text-[#101828]">{isPremiumActive ? "프리미엄 이용" : "무료 이용"} 중</span>입니다.
             <br />
-            무제한 루틴과 통계로 더 나은 나를 만나보세요.
+            루틴 개수 제한 없이 더 나은 나를 만나보세요.
           </p>
           {state.entitlement.premiumUntil && (
             <p className="text-[13px] text-gray-400 mt-2">만료 예정: {state.entitlement.premiumUntil}</p>
@@ -148,7 +148,7 @@ export default function PaywallPage() {
           {[
             {
               icon: "all_inclusive",
-              title: "무제한 루틴 생성",
+              title: "루틴 개수 제한 없음",
               desc: "3개 제한 없이 원하는 만큼 루틴을 만드세요",
             },
             {
@@ -228,7 +228,7 @@ export default function PaywallPage() {
         </div>
 
         <p className="text-center text-[12px] text-gray-400 mb-6 px-4 leading-normal">
-          7일 무료 체험 종료 24시간 전에 구독을 취소하면 요금이 청구되지 않아요. 언제든지 설정에서
+          7일 무료 체험 종료 후 이용권이 자동 만료돼요. 유료 이용권은 기간 내 설정에서
           해지할 수 있습니다.
         </p>
 

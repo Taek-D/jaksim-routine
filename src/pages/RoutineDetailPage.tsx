@@ -119,6 +119,10 @@ export default function RoutineDetailPage() {
               className="flex-1 h-[46px] rounded-xl bg-[#f2f4f7] text-[#344054] text-[15px] font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 active:scale-95"
               type="button"
               onClick={() => {
+                const ok = window.confirm("정말 다시 시작할까요? 현재 스트릭이 초기화돼요.");
+                if (!ok) {
+                  return;
+                }
                 trackEvent("routine_restart", {
                   routineId: routine.id,
                   prevStreak: streak,
