@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-02-23T09:38:20.067Z",
+  "lastUpdated": "2026-02-23T10:59:29.599Z",
   "activeFeatures": [
     "작심루틴",
     "backend",
@@ -24,9 +24,9 @@
       "archivedAt": "2026-02-23T12:00:00.000Z",
       "archivedTo": "docs/archive/2026-02/작심루틴/",
       "phaseNumber": 3,
-      "lastFile": "E:\\프로젝트\\앱인토스\\작심루틴\\src\\pages\\PaywallPage.tsx",
+      "lastFile": "E:\\프로젝트\\앱인토스\\작심루틴\\src\\pages\\SettingsPage.tsx",
       "timestamps": {
-        "lastUpdated": "2026-02-23T09:26:39.117Z"
+        "lastUpdated": "2026-02-23T10:59:29.599Z"
       }
     },
     "backend": {
@@ -64,7 +64,7 @@
   "session": {
     "startedAt": "2026-02-22T07:15:07.533Z",
     "onboardingCompleted": true,
-    "lastActivity": "2026-02-23T09:38:20.067Z"
+    "lastActivity": "2026-02-23T10:59:29.599Z"
   },
   "history": [
     {
@@ -459,6 +459,24 @@
     {
       "timestamp": "2026-02-23T09:38:20.066Z",
       "feature": "state",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T10:43:45.560Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T10:43:52.032Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T10:59:29.599Z",
+      "feature": "작심루틴",
       "phase": "do",
       "action": "updated"
     }

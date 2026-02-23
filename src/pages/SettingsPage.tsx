@@ -50,7 +50,7 @@ export default function SettingsPage() {
               <p className="text-[14px] text-gray-500 mt-1">
                 {isPremium
                   ? "프리미엄 기능을 이용 중이에요."
-                  : "프리미엄으로 업그레이드하고 무제한 루틴과 상세 리포트를 받아보세요."}
+                  : "프리미엄으로 업그레이드하고 루틴 개수 제한 없이 상세 리포트를 받아보세요."}
               </p>
               {!isPremium && (
                 <Link
