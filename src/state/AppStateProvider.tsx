@@ -641,7 +641,10 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
   const resetAllData = useCallback(async () => {
     await clearAppState();
-    setState(createInitialAppState());
+    setState((prev) => ({
+      ...createInitialAppState(),
+      entitlement: prev.entitlement,
+    }));
     setBadgeNoticeQueue([]);
     knownBadgeCountRef.current = 0;
     badgeWatcherReadyRef.current = true;

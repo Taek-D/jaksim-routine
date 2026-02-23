@@ -90,6 +90,16 @@ export function getCurrentWeekLabel(date: Date = new Date()): string {
   return getKstWeekLabel(date, 0);
 }
 
+export function formatKstDate(iso: string): string {
+  const formatter = new Intl.DateTimeFormat(KST_LOCALE, {
+    timeZone: KST_TIME_ZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  return formatter.format(new Date(iso));
+}
+
 export function getKstWeekLabel(date: Date = new Date(), weekOffset = 0): string {
   const week = getKstWeekRange(date, weekOffset);
   const monday = parseKstDateStamp(week.start);

@@ -4,6 +4,7 @@ import { useAppState } from "../state/AppStateProvider";
 import { openExternalUrl } from "../integrations/tossSdk";
 import { trackEvent } from "../analytics/analytics";
 import { appConfig, buildSupportMailto } from "../config/appConfig";
+import { formatKstDate } from "../utils/date";
 import { Icon } from "../components/Icon";
 
 export default function SettingsPage() {
@@ -13,7 +14,7 @@ export default function SettingsPage() {
 
   const premiumUntil = state.entitlement.premiumUntil;
   const isPremium = Boolean(premiumUntil);
-  const entitlementLabel = premiumUntil ? `${premiumUntil}까지 활성` : "무료 이용 중";
+  const entitlementLabel = premiumUntil ? `${formatKstDate(premiumUntil)}까지 활성` : "무료 이용 중";
 
   useEffect(() => {
     if (hasTrackedSettingsViewRef.current) {

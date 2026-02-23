@@ -7,6 +7,7 @@ import { trackEvent } from "../analytics/analytics";
 import { getIapProductItems } from "../integrations/tossSdk";
 import { Icon } from "../components/Icon";
 import { cn } from "@/lib/utils";
+import { formatKstDate } from "../utils/date";
 
 function resolveTrigger(search: string): string {
   const value = new URLSearchParams(search).get("trigger");
@@ -139,7 +140,7 @@ export default function PaywallPage() {
             루틴 개수 제한 없이 더 나은 나를 만나보세요.
           </p>
           {state.entitlement.premiumUntil && (
-            <p className="text-[13px] text-gray-400 mt-2">만료 예정: {state.entitlement.premiumUntil}</p>
+            <p className="text-[13px] text-gray-400 mt-2">만료 예정: {formatKstDate(state.entitlement.premiumUntil)}</p>
           )}
         </div>
 
