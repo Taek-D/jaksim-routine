@@ -118,16 +118,8 @@ export default function PaywallPage() {
   return (
     <div className="flex flex-col h-full bg-white relative">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md px-4 py-3 flex items-center justify-between">
-        <div className="w-8" />
+      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md px-4 py-3 flex items-center justify-center">
         <h1 className="text-[17px] font-bold text-transparent select-none">Premium</h1>
-        <button
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-          type="button"
-          onClick={() => navigate(-1)}
-        >
-          <Icon name="close" size={24} className="text-gray-600" />
-        </button>
       </header>
 
       <main className="flex-1 px-5 pt-4 pb-8 overflow-y-auto">

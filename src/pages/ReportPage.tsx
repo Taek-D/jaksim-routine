@@ -46,13 +46,10 @@ export default function ReportPage() {
   }, [weekOffset, summary.weekLabel]);
 
   return (
-    <div className="flex flex-col h-full pb-24">
+    <div className="flex flex-col h-full pb-28">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-[#f4f6f8]/90 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-gray-200/50">
+      <header className="sticky top-0 z-10 bg-[#f4f6f8]/90 backdrop-blur-md px-4 py-3 flex items-center border-b border-gray-200/50">
         <h1 className="text-[20px] font-bold text-[#101828]">주간 리포트</h1>
-        <button className="p-1 rounded-full hover:bg-gray-200 transition-colors" type="button">
-          <Icon name="more_horiz" size={24} className="text-gray-600" />
-        </button>
       </header>
 
       <main className="p-4 flex flex-col gap-4">

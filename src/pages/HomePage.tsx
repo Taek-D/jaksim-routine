@@ -102,7 +102,7 @@ export default function HomePage() {
 
   return (
     <>
-      <div className="flex flex-col h-full pb-[140px]">
+      <div className="flex flex-col h-full pb-[160px]">
         <main className="flex-1 px-4 flex flex-col gap-5 pt-2">
           {/* Date & Streak */}
           <section className="flex flex-col gap-1 mt-2 px-1">
@@ -349,7 +349,7 @@ export default function HomePage() {
         </main>
 
         {/* Floating Bottom Bar */}
-        <div className="fixed bottom-[80px] w-full max-w-[640px] px-4 pointer-events-none z-40">
+        <div className="fixed bottom-[76px] w-full max-w-[640px] px-4 pointer-events-none z-40">
           <div className="flex gap-3 pointer-events-auto">
             <button
               className="flex-1 h-[52px] rounded-2xl bg-[#111827] text-white text-[16px] font-bold shadow-lg shadow-gray-900/10 flex items-center justify-center gap-2 active:scale-95 transition-transform"

@@ -15,8 +15,11 @@
   },
   "dependencies": {
     "@apps-in-toss/web-framework": "^1.12.0",
+    "@emotion/react": "^11.14.0",
     "@supabase/supabase-js": "^2.97.0",
     "@tailwindcss/vite": "^4.2.0",
+    "@toss/tds-mobile": "^2.2.1",
+    "@toss/tds-mobile-ait": "^2.2.1",
     "clsx": "^2.1.1",
     "motion": "^12.34.3",
     "react": "^18.3.1",

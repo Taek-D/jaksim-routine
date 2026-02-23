@@ -8,11 +8,9 @@ function AppContent() {
 
   if (!hydrated) {
     return (
-      <section className="screen centered">
-        <div className="card">
-          <p className="muted">데이터를 불러오는 중이에요…</p>
-        </div>
-      </section>
+      <div className="flex items-center justify-center h-full p-8">
+        <p className="text-[14px] text-gray-400">데이터를 불러오는 중이에요…</p>
+      </div>
     );
   }
 
