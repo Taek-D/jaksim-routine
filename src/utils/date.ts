@@ -100,6 +100,15 @@ export function formatKstDate(iso: string): string {
   return formatter.format(new Date(iso));
 }
 
+export function getKstHour(date: Date = new Date()): number {
+  const hourStr = new Intl.DateTimeFormat("en-US", {
+    timeZone: KST_TIME_ZONE,
+    hour: "numeric",
+    hour12: false,
+  }).format(date);
+  return parseInt(hourStr, 10);
+}
+
 export function getKstWeekLabel(date: Date = new Date(), weekOffset = 0): string {
   const week = getKstWeekRange(date, weekOffset);
   const monday = parseKstDateStamp(week.start);

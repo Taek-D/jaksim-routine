@@ -65,6 +65,7 @@ interface AppStateContextValue {
     status: CheckinStatus,
     note?: string
   ) => void;
+  addNoteToCheckin: (routineId: string, note: string) => void;
   restartRoutine: (routineId: string) => void;
   startFreeTrial: () => Promise<{ ok: boolean; reason?: "ALREADY_USED" }>;
   purchasePremium: (
@@ -506,6 +507,18 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     });
   }, []);
 
+  const addNoteToCheckin = useCallback((routineId: string, note: string) => {
+    const date = getKstDateStamp();
+    setState((prev) => ({
+      ...prev,
+      checkins: prev.checkins.map((checkin) =>
+        checkin.routineId === routineId && checkin.date === date
+          ? { ...checkin, note: note.trim() || undefined }
+          : checkin
+      ),
+    }));
+  }, []);
+
   const restartRoutine = useCallback((routineId: string) => {
     setState((prev) => ({
       ...prev,
@@ -664,6 +677,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       updateRoutine,
       deleteRoutine,
       checkinRoutine,
+      addNoteToCheckin,
       restartRoutine,
       startFreeTrial,
       purchasePremium,
@@ -686,6 +700,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       updateRoutine,
       deleteRoutine,
       checkinRoutine,
+      addNoteToCheckin,
       restartRoutine,
       startFreeTrial,
       purchasePremium,

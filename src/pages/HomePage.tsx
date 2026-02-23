@@ -7,13 +7,21 @@ import {
   getTodayRoutineStatus,
   getTodayTargetRoutines,
 } from "../state/selectors";
-import { getKstLongDateLabel } from "../utils/date";
+import { getKstHour, getKstLongDateLabel } from "../utils/date";
+import { getGreeting } from "../utils/greeting";
+import { getRoutineColor } from "../utils/routineColor";
 import NoteModal from "../components/NoteModal";
 import WarningToast from "../components/WarningToast";
 import { trackEvent } from "../analytics/analytics";
 import { Icon } from "../components/Icon";
 import { cn } from "@/lib/utils";
-import { motion } from "motion/react";
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  AnimatePresence,
+  type PanInfo,
+} from "motion/react";
 import confetti from "canvas-confetti";
 
 interface RoutineActionTarget {
@@ -21,6 +29,8 @@ interface RoutineActionTarget {
   title: string;
   prevStreak?: number;
 }
+
+const SWIPE_THRESHOLD = 80;
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -32,11 +42,15 @@ export default function HomePage() {
     dismissTrialExpiredBanner,
     dismissRefundRevokedBanner,
     checkinRoutine,
+    addNoteToCheckin,
   } = useAppState();
   const hasTrackedHomeViewRef = useRef(false);
   const [noteTarget, setNoteTarget] = useState<RoutineActionTarget | null>(null);
   const [skipTarget, setSkipTarget] = useState<RoutineActionTarget | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
+  const [inlineMemoId, setInlineMemoId] = useState<string | null>(null);
+  const [inlineMemoText, setInlineMemoText] = useState("");
+  const inlineMemoTimerRef = useRef<number | null>(null);
   const todayRoutines = getTodayTargetRoutines(state);
   const archivedCount = state.routines.filter((routine) => routine.archivedAt).length;
   const topStreak = state.routines.reduce(
@@ -48,6 +62,7 @@ export default function HomePage() {
   ).length;
   const totalCount = todayRoutines.length;
   const progress = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+  const greeting = getGreeting(getKstHour(), progress, topStreak, totalCount);
 
   useEffect(() => {
     if (hasTrackedHomeViewRef.current) {
@@ -59,6 +74,51 @@ export default function HomePage() {
       archivedRoutineCount: archivedCount,
     });
   }, [todayRoutines.length, archivedCount]);
+
+  const clearInlineMemoTimer = () => {
+    if (inlineMemoTimerRef.current != null) {
+      window.clearTimeout(inlineMemoTimerRef.current);
+      inlineMemoTimerRef.current = null;
+    }
+  };
+
+  const startInlineMemo = (routineId: string) => {
+    clearInlineMemoTimer();
+    setInlineMemoId(routineId);
+    setInlineMemoText("");
+    inlineMemoTimerRef.current = window.setTimeout(() => {
+      setInlineMemoId((prev) => (prev === routineId ? null : prev));
+    }, 5000);
+  };
+
+  const submitInlineMemo = (routineId: string) => {
+    clearInlineMemoTimer();
+    if (inlineMemoText.trim()) {
+      addNoteToCheckin(routineId, inlineMemoText);
+    }
+    setInlineMemoId(null);
+    setInlineMemoText("");
+  };
+
+  const dismissInlineMemo = () => {
+    clearInlineMemoTimer();
+    setInlineMemoId(null);
+    setInlineMemoText("");
+  };
+
+  const handleComplete = (routineId: string) => {
+    trackEvent("checkin_complete", {
+      routineId,
+      withNote: false,
+    });
+    checkinRoutine(routineId, "COMPLETED");
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+    });
+    startInlineMemo(routineId);
+  };
 
   const openNoteModal = (routineId: string, title: string) => {
     setNoteTarget({ routineId, title });
@@ -122,7 +182,7 @@ export default function HomePage() {
                 </div>
               )}
             </div>
-            <p className="text-[#475467] text-[15px]">오늘도 꾸준함이 답이에요.</p>
+            <p className="text-[#475467] text-[15px]">{greeting}</p>
           </section>
 
           {/* Banners */}
@@ -240,115 +300,32 @@ export default function HomePage() {
                 const todayStatus = todayCheckin?.status ?? null;
                 const currentStreak = getRoutineStreak(state, routine.id);
                 const isCompleted = todayStatus === "COMPLETED";
+                const isSkipped = todayStatus === "SKIPPED";
                 const note = todayCheckin?.note;
+                const color = getRoutineColor(routine.id);
+                const canSwipe = !isCompleted && !isSkipped;
+                const showInlineMemo = isCompleted && inlineMemoId === routine.id;
 
                 return (
-                  <motion.article
+                  <RoutineCard
                     key={routine.id}
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={cn(
-                      "bg-white rounded-[20px] p-5 shadow-sm flex flex-col gap-4 relative overflow-hidden transition-all border border-transparent",
-                      isCompleted && "bg-emerald-50/60 border-emerald-100 shadow-emerald-100/50"
-                    )}
-                  >
-                    {isCompleted && (
-                      <div className="absolute inset-0 bg-gray-50/50 pointer-events-none z-0" />
-                    )}
-
-                    <div className="flex justify-between items-start z-10">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          {isCompleted ? (
-                            <span className="bg-green-100 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                              <Icon name="check" size={12} /> 완료됨
-                            </span>
-                          ) : todayStatus === "SKIPPED" ? (
-                            <span className="bg-gray-100 text-gray-500 text-[11px] font-bold px-2.5 py-1 rounded-full">
-                              건너뜀
-                            </span>
-                          ) : currentStreak > 0 ? (
-                            <span className="bg-orange-50 text-orange-700 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                              <Icon name="local_fire_department" size={12} /> {currentStreak}일 연속
-                            </span>
-                          ) : (
-                            <span className="bg-gray-100 text-gray-500 text-[11px] font-bold px-2.5 py-1 rounded-full">
-                              미체크
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          <Link
-                            to={`/routine/${routine.id}`}
-                            className="text-[18px] font-bold text-[#101828] transition-colors hover:underline decoration-2 underline-offset-4"
-                          >
-                            {routine.title}
-                          </Link>
-                          {isCompleted && note && (
-                            <p className="text-[14px] text-gray-600 mt-1 pl-3 border-l-[3px] border-emerald-300 bg-white/50 py-1 pr-2 rounded-r-md">
-                              {note}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      {!isCompleted && todayStatus !== "SKIPPED" && (
-                        <Link to={`/routine/${routine.id}`} className="text-gray-400 hover:text-gray-600">
-                          <Icon name="more_horiz" />
-                        </Link>
-                      )}
-                    </div>
-
-                    {!isCompleted && (
-                      <div className="grid grid-cols-[1fr_1fr_auto] gap-2 z-10">
-                        {todayStatus === "SKIPPED" ? (
-                          <button
-                            className="col-span-3 h-[42px] rounded-xl bg-gray-100 text-gray-400 text-[14px] font-medium flex items-center justify-center gap-1.5 hover:bg-gray-200 transition-colors"
-                            type="button"
-                            disabled
-                          >
-                            건너뜀 처리됨
-                          </button>
-                        ) : (
-                          <>
-                            <button
-                              className="h-[46px] rounded-xl bg-[#111827] text-white text-[15px] font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center shadow-sm active:scale-95"
-                              type="button"
-                              onClick={() => {
-                                trackEvent("checkin_complete", {
-                                  routineId: routine.id,
-                                  withNote: false,
-                                });
-                                checkinRoutine(routine.id, "COMPLETED");
-                                confetti({
-                                  particleCount: 100,
-                                  spread: 70,
-                                  origin: { y: 0.6 },
-                                });
-                              }}
-                            >
-                              완료
-                            </button>
-                            <button
-                              className="h-[46px] rounded-xl bg-[#f2f4f7] text-[#344054] text-[15px] font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-1 active:scale-95"
-                              type="button"
-                              onClick={() => openNoteModal(routine.id, routine.title)}
-                            >
-                              <Icon name="edit_note" size={18} />
-                              메모
-                            </button>
-                            <button
-                              className="h-[46px] w-[46px] rounded-xl bg-white border border-gray-200 text-[#475467] hover:bg-gray-50 transition-colors flex items-center justify-center active:scale-95"
-                              type="button"
-                              onClick={() => openSkipWarning(routine.id, routine.title, currentStreak)}
-                            >
-                              <Icon name="fast_forward" size={20} />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </motion.article>
+                    routineId={routine.id}
+                    title={routine.title}
+                    isCompleted={isCompleted}
+                    isSkipped={isSkipped}
+                    note={note}
+                    currentStreak={currentStreak}
+                    color={color}
+                    canSwipe={canSwipe}
+                    showInlineMemo={showInlineMemo}
+                    inlineMemoText={inlineMemoText}
+                    onInlineMemoChange={setInlineMemoText}
+                    onInlineMemoSubmit={() => submitInlineMemo(routine.id)}
+                    onInlineMemoDismiss={dismissInlineMemo}
+                    onComplete={() => handleComplete(routine.id)}
+                    onOpenNote={() => openNoteModal(routine.id, routine.title)}
+                    onSkip={() => openSkipWarning(routine.id, routine.title, currentStreak)}
+                  />
                 );
               })}
 
@@ -412,5 +389,222 @@ export default function HomePage() {
         actionLabel="건너뜀 기록"
       />
     </>
+  );
+}
+
+// --- Swipeable Routine Card ---
+
+interface RoutineCardProps {
+  routineId: string;
+  title: string;
+  isCompleted: boolean;
+  isSkipped: boolean;
+  note: string | undefined;
+  currentStreak: number;
+  color: ReturnType<typeof getRoutineColor>;
+  canSwipe: boolean;
+  showInlineMemo: boolean;
+  inlineMemoText: string;
+  onInlineMemoChange: (text: string) => void;
+  onInlineMemoSubmit: () => void;
+  onInlineMemoDismiss: () => void;
+  onComplete: () => void;
+  onOpenNote: () => void;
+  onSkip: () => void;
+}
+
+function RoutineCard({
+  routineId,
+  title,
+  isCompleted,
+  isSkipped,
+  note,
+  currentStreak,
+  color,
+  canSwipe,
+  showInlineMemo,
+  inlineMemoText,
+  onInlineMemoChange,
+  onInlineMemoSubmit,
+  onInlineMemoDismiss,
+  onComplete,
+  onOpenNote,
+  onSkip,
+}: RoutineCardProps) {
+  const x = useMotionValue(0);
+  const rightHintOpacity = useTransform(x, [0, SWIPE_THRESHOLD], [0, 1]);
+  const leftHintOpacity = useTransform(x, [-SWIPE_THRESHOLD, 0], [1, 0]);
+
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
+    if (info.offset.x > SWIPE_THRESHOLD) {
+      onComplete();
+    } else if (info.offset.x < -SWIPE_THRESHOLD) {
+      onSkip();
+    }
+  };
+
+  return (
+    <div className="relative">
+      {/* Swipe hint layers */}
+      {canSwipe && (
+        <>
+          <motion.div
+            className="absolute inset-0 rounded-[20px] bg-emerald-100 flex items-center pl-5 pointer-events-none"
+            style={{ opacity: rightHintOpacity }}
+          >
+            <Icon name="check_circle" size={28} className="text-emerald-600" />
+          </motion.div>
+          <motion.div
+            className="absolute inset-0 rounded-[20px] bg-gray-200 flex items-center justify-end pr-5 pointer-events-none"
+            style={{ opacity: leftHintOpacity }}
+          >
+            <Icon name="fast_forward" size={28} className="text-gray-500" />
+          </motion.div>
+        </>
+      )}
+
+      <motion.article
+        layout
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        drag={canSwipe ? "x" : false}
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.4}
+        onDragEnd={canSwipe ? handleDragEnd : undefined}
+        style={canSwipe ? { x } : undefined}
+        className={cn(
+          "bg-white rounded-[20px] p-5 shadow-sm flex flex-col gap-4 relative overflow-hidden transition-all border border-transparent border-l-4",
+          color.accent,
+          isCompleted && "bg-emerald-50/60 border-emerald-100 shadow-emerald-100/50"
+        )}
+      >
+        {isCompleted && (
+          <div className="absolute inset-0 bg-gray-50/50 pointer-events-none z-0" />
+        )}
+
+        <div className="flex justify-between items-start z-10">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              {isCompleted ? (
+                <span className="bg-green-100 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                  <Icon name="check" size={12} /> 완료됨
+                </span>
+              ) : isSkipped ? (
+                <span className="bg-gray-100 text-gray-500 text-[11px] font-bold px-2.5 py-1 rounded-full">
+                  건너뜀
+                </span>
+              ) : currentStreak > 0 ? (
+                <span className="bg-orange-50 text-orange-700 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                  <Icon name="local_fire_department" size={12} /> {currentStreak}일 연속
+                </span>
+              ) : (
+                <span className="bg-gray-100 text-gray-500 text-[11px] font-bold px-2.5 py-1 rounded-full">
+                  미체크
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <Link
+                to={`/routine/${routineId}`}
+                className="text-[18px] font-bold text-[#101828] transition-colors hover:underline decoration-2 underline-offset-4"
+              >
+                {title}
+              </Link>
+              {isCompleted && note && (
+                <p className="text-[14px] text-gray-600 mt-1 pl-3 border-l-[3px] border-emerald-300 bg-white/50 py-1 pr-2 rounded-r-md">
+                  {note}
+                </p>
+              )}
+            </div>
+          </div>
+          {!isCompleted && !isSkipped && (
+            <Link to={`/routine/${routineId}`} className="text-gray-400 hover:text-gray-600">
+              <Icon name="more_horiz" />
+            </Link>
+          )}
+        </div>
+
+        {/* Inline memo after completion */}
+        <AnimatePresence>
+          {showInlineMemo && (
+            <motion.div
+              className="z-10 flex items-center gap-2"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              <input
+                type="text"
+                className="flex-1 h-[38px] px-3 rounded-lg border border-gray-200 text-[14px] text-[#101828] placeholder:text-gray-400 focus:outline-none focus:border-emerald-400"
+                placeholder="한 줄 메모 남기기 (선택)"
+                maxLength={120}
+                value={inlineMemoText}
+                onChange={(e) => onInlineMemoChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    onInlineMemoSubmit();
+                  }
+                }}
+                autoFocus
+              />
+              <button
+                className="h-[38px] px-3 rounded-lg bg-emerald-600 text-white text-[13px] font-semibold shrink-0 active:scale-95"
+                type="button"
+                onClick={onInlineMemoSubmit}
+              >
+                저장
+              </button>
+              <button
+                className="text-[13px] text-gray-400 shrink-0"
+                type="button"
+                onClick={onInlineMemoDismiss}
+              >
+                건너뛰기
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {!isCompleted && (
+          <div className="grid grid-cols-[1fr_auto_auto] gap-2 z-10">
+            {isSkipped ? (
+              <button
+                className="col-span-3 h-[42px] rounded-xl bg-gray-100 text-gray-400 text-[14px] font-medium flex items-center justify-center gap-1.5 hover:bg-gray-200 transition-colors"
+                type="button"
+                disabled
+              >
+                건너뜀 처리됨
+              </button>
+            ) : (
+              <>
+                <button
+                  className="h-[46px] rounded-xl bg-[#111827] text-white text-[15px] font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center shadow-sm active:scale-95"
+                  type="button"
+                  onClick={onComplete}
+                >
+                  완료
+                </button>
+                <button
+                  className="h-[46px] w-[46px] rounded-xl bg-[#f2f4f7] text-[#344054] hover:bg-gray-200 transition-colors flex items-center justify-center active:scale-95"
+                  type="button"
+                  onClick={onOpenNote}
+                  title="메모+완료"
+                >
+                  <Icon name="edit_note" size={20} />
+                </button>
+                <button
+                  className="h-[46px] w-[46px] rounded-xl bg-white border border-gray-200 text-[#475467] hover:bg-gray-50 transition-colors flex items-center justify-center active:scale-95"
+                  type="button"
+                  onClick={onSkip}
+                >
+                  <Icon name="fast_forward" size={20} />
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </motion.article>
+    </div>
   );
 }

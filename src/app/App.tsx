@@ -2,6 +2,7 @@ import AppShell from "../components/AppShell";
 import BadgeOverlay from "../components/BadgeOverlay";
 import { AppStateProvider, useAppState } from "../state/AppStateProvider";
 import AppRoutes from "./AppRoutes";
+import { AnimatePresence } from "motion/react";
 
 function AppContent() {
   const { hydrated, badgeNotice, dismissBadgeNotice } = useAppState();
@@ -17,7 +18,15 @@ function AppContent() {
   return (
     <>
       <AppRoutes />
-      <BadgeOverlay badge={badgeNotice} onClose={dismissBadgeNotice} />
+      <AnimatePresence>
+        {badgeNotice && (
+          <BadgeOverlay
+            key={badgeNotice.badgeType}
+            badge={badgeNotice}
+            onClose={dismissBadgeNotice}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

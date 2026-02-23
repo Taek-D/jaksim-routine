@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import type { Badge, BadgeType } from "../domain/models";
 import { Icon } from "./Icon";
+import { motion } from "motion/react";
+import confetti from "canvas-confetti";
 
 interface BadgeOverlayProps {
   badge: Badge | null;
@@ -29,9 +31,15 @@ export default function BadgeOverlay({ badge, onClose }: BadgeOverlayProps) {
       return;
     }
 
+    confetti({
+      particleCount: 120,
+      spread: 80,
+      origin: { y: 0.5 },
+    });
+
     const timeoutId = window.setTimeout(() => {
       onClose();
-    }, 2600);
+    }, 3500);
 
     return () => {
       window.clearTimeout(timeoutId);
@@ -43,12 +51,24 @@ export default function BadgeOverlay({ badge, onClose }: BadgeOverlayProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-[120] bg-black/20 flex items-center justify-center p-5" role="presentation">
-      <section
+    <motion.div
+      className="fixed inset-0 z-[120] bg-black/20 flex items-center justify-center p-5"
+      role="presentation"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.section
+        key={badge.badgeType}
         className="w-[min(100%,360px)] rounded-[18px] border border-amber-200 bg-gradient-to-b from-amber-50 to-white shadow-[0_18px_44px_rgba(16,24,40,0.22)] p-6 flex flex-col items-center text-center"
         role="dialog"
         aria-modal="false"
         aria-live="polite"
+        initial={{ scale: 0.7, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        transition={{ type: "spring", damping: 20, stiffness: 300 }}
       >
         <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
           <Icon name="emoji_events" size={32} className="text-amber-600" filled />
@@ -65,7 +85,7 @@ export default function BadgeOverlay({ badge, onClose }: BadgeOverlayProps) {
         >
           확인
         </button>
-      </section>
-    </div>
+      </motion.section>
+    </motion.div>
   );
 }

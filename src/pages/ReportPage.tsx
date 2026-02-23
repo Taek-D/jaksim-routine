@@ -3,6 +3,7 @@ import { buildWeeklyReportSummary } from "../domain/progress";
 import { useAppState } from "../state/AppStateProvider";
 import { trackEvent } from "../analytics/analytics";
 import { Icon } from "../components/Icon";
+import { getRoutineColor } from "../utils/routineColor";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 
@@ -119,11 +120,13 @@ export default function ReportPage() {
               <p className="text-[14px] text-gray-400">생성된 루틴이 없어요.</p>
             </div>
           )}
-          {summary.routines.map((routine) => (
+          {summary.routines.map((routine) => {
+            const color = getRoutineColor(routine.routineId);
+            return (
             <div key={routine.routineId} className="bg-white rounded-[20px] p-4 shadow-sm flex flex-col gap-3">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                  <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", color.iconBg, color.iconText)}>
                     <Icon name="fitness_center" size={20} />
                   </div>
                   <div>
@@ -140,7 +143,7 @@ export default function ReportPage() {
               </div>
               <div className="w-full bg-[#f2f4f7] rounded-full h-2 overflow-hidden">
                 <motion.div
-                  className="bg-orange-500 h-full rounded-full"
+                  className={cn(color.progressBar, "h-full rounded-full")}
                   initial={{ width: 0 }}
                   animate={{ width: `${routine.completionRate}%` }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
@@ -155,7 +158,8 @@ export default function ReportPage() {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </section>
 
         {/* Badges */}
