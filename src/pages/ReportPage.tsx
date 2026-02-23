@@ -1,9 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { buildWeeklyReportSummary } from "../domain/progress";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  buildHeatmapData,
+  buildMonthlyTrend,
+  buildWeeklyReportSummary,
+  getRecentNotes,
+} from "../domain/progress";
 import { useAppState } from "../state/AppStateProvider";
 import { trackEvent } from "../analytics/analytics";
 import { Icon } from "../components/Icon";
-import { getRoutineColor } from "../utils/routineColor";
+import HeatmapGrid from "../components/HeatmapGrid";
+import { getRoutineColor, getRoutineIcon } from "../utils/routineColor";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 
@@ -15,12 +22,40 @@ const BADGE_DISPLAY: Record<string, { icon: string; label: string; color: string
   COMEBACK: { icon: "💪", label: "다시 시작", color: "bg-green-50 border-green-200" },
 };
 
+const FREE_NOTES_LIMIT = 3;
+
+function PremiumBlurOverlay({ onNavigate }: { onNavigate: () => void }) {
+  return (
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[20px] backdrop-blur-[6px] bg-white/60">
+      <Icon name="lock" size={28} className="text-gray-400 mb-2" />
+      <p className="text-[13px] font-semibold text-gray-600 mb-3">
+        프리미엄으로 내 기록 한눈에 보기
+      </p>
+      <button
+        type="button"
+        className="px-4 py-2 bg-[#111827] text-white text-[13px] font-semibold rounded-xl active:scale-[0.97] transition-transform"
+        onClick={onNavigate}
+      >
+        프리미엄 시작하기
+      </button>
+    </div>
+  );
+}
+
 export default function ReportPage() {
-  const { state } = useAppState();
+  const { state, isPremiumActive: _isPremiumActive } = useAppState();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isPremiumActive = searchParams.get("free") === "1" ? false : _isPremiumActive;
   const hasTrackedReportViewRef = useRef(false);
   const lastWeekOffsetRef = useRef(0);
   const [weekOffset, setWeekOffset] = useState(0);
   const summary = useMemo(() => buildWeeklyReportSummary(state, weekOffset), [state, weekOffset]);
+  const heatmapCells = useMemo(() => buildHeatmapData(state, 30), [state]);
+  const trendData = useMemo(() => buildMonthlyTrend(state, 4), [state]);
+  const recentNotes = useMemo(() => getRecentNotes(state, 20), [state]);
+
+  const goToPaywall = () => navigate("/paywall?trigger=report_premium");
 
   useEffect(() => {
     if (hasTrackedReportViewRef.current) {
@@ -46,14 +81,71 @@ export default function ReportPage() {
     lastWeekOffsetRef.current = weekOffset;
   }, [weekOffset, summary.weekLabel]);
 
+  const maxTrendRate = Math.max(...trendData.map((p) => p.completionRate), 1);
+  const visibleNotes = isPremiumActive ? recentNotes : recentNotes.slice(0, FREE_NOTES_LIMIT);
+
   return (
     <div className="flex flex-col h-full pb-28">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-[#f4f6f8]/90 backdrop-blur-md px-4 py-3 flex items-center border-b border-gray-200/50">
-        <h1 className="text-[20px] font-bold text-[#101828]">주간 리포트</h1>
+        <h1 className="text-[20px] font-bold text-[#101828]">리포트</h1>
       </header>
 
       <main className="p-4 flex flex-col gap-4">
+        {/* Heatmap (30-day) */}
+        <section className="bg-white rounded-[20px] p-5 shadow-sm relative overflow-hidden">
+          <h2 className="text-[16px] font-bold text-[#101828] mb-3">30일 체크인 히트맵</h2>
+          <div className="flex justify-center overflow-x-auto">
+            <HeatmapGrid cells={heatmapCells} />
+          </div>
+          <div className="flex items-center justify-end gap-1 mt-3">
+            <span className="text-[10px] text-gray-400 mr-1">적음</span>
+            {[0, 1, 2, 3, 4].map((level) => (
+              <div
+                key={level}
+                className={cn(
+                  "w-[10px] h-[10px] rounded-[2px]",
+                  level === 0 && "bg-gray-100",
+                  level === 1 && "bg-green-200",
+                  level === 2 && "bg-green-400",
+                  level === 3 && "bg-green-500",
+                  level === 4 && "bg-green-700"
+                )}
+              />
+            ))}
+            <span className="text-[10px] text-gray-400 ml-1">많음</span>
+          </div>
+          {!isPremiumActive && <PremiumBlurOverlay onNavigate={goToPaywall} />}
+        </section>
+
+        {/* Monthly Trend */}
+        <section className="bg-white rounded-[20px] p-5 shadow-sm relative overflow-hidden">
+          <h2 className="text-[16px] font-bold text-[#101828] mb-4">주간 달성률 추이</h2>
+          <div className="flex items-end gap-2 h-[120px]">
+            {trendData.map((point) => (
+              <div key={point.weekLabel} className="flex-1 flex flex-col items-center gap-1">
+                <span className="text-[11px] font-semibold text-[#101828]">
+                  {point.completionRate}%
+                </span>
+                <div className="w-full flex justify-center">
+                  <motion.div
+                    className="w-8 rounded-t-md bg-blue-400"
+                    initial={{ height: 0 }}
+                    animate={{
+                      height: `${Math.max((point.completionRate / maxTrendRate) * 80, 4)}px`,
+                    }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  />
+                </div>
+                <span className="text-[9px] text-gray-400 text-center leading-tight truncate w-full">
+                  {point.weekLabel.split("~")[0].trim()}
+                </span>
+              </div>
+            ))}
+          </div>
+          {!isPremiumActive && <PremiumBlurOverlay onNavigate={goToPaywall} />}
+        </section>
+
         {/* Date Navigator */}
         <div className="flex items-center justify-between py-2">
           <button
@@ -127,7 +219,7 @@ export default function ReportPage() {
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", color.iconBg, color.iconText)}>
-                    <Icon name="fitness_center" size={20} />
+                    <Icon name={getRoutineIcon(routine.title, routine.routineId)} size={20} />
                   </div>
                   <div>
                     <h3 className="text-[15px] font-semibold text-[#101828]">{routine.title}</h3>
@@ -193,6 +285,42 @@ export default function ReportPage() {
               );
             })}
           </div>
+        </section>
+
+        {/* Memo History Timeline */}
+        <section className="mt-2">
+          <h2 className="text-[16px] font-bold text-[#101828] px-1 mb-3">나의 기록 일지</h2>
+          {recentNotes.length === 0 ? (
+            <div className="bg-white rounded-[20px] p-5 shadow-sm">
+              <p className="text-[14px] text-gray-400">아직 작성한 메모가 없어요.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {visibleNotes.map((entry, i) => (
+                <div
+                  key={`${entry.date}-${i}`}
+                  className="bg-white rounded-[16px] p-4 shadow-sm border-l-4 border-green-400"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[12px] font-semibold text-gray-500">{entry.date}</span>
+                    <span className="text-[11px] text-gray-400">|</span>
+                    <span className="text-[12px] font-medium text-[#101828]">{entry.routineTitle}</span>
+                  </div>
+                  <p className="text-[14px] text-gray-700 leading-relaxed">{entry.note}</p>
+                </div>
+              ))}
+              {!isPremiumActive && recentNotes.length > FREE_NOTES_LIMIT && (
+                <button
+                  type="button"
+                  className="bg-white rounded-[16px] p-4 shadow-sm border border-dashed border-gray-300 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                  onClick={goToPaywall}
+                >
+                  <Icon name="lock" size={16} className="text-gray-400" />
+                  <span className="text-[13px] font-semibold text-gray-500">더 보기</span>
+                </button>
+              )}
+            </div>
+          )}
         </section>
       </main>
     </div>

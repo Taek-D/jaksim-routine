@@ -33,6 +33,12 @@ export interface Badge {
   earnedAt: string;
 }
 
+export type StreakShieldEntry = {
+  routineId: string;
+  date: string;
+  usedAt: string;
+};
+
 export interface Entitlement {
   premiumUntil?: string;
   trialUsedLocal?: boolean;
@@ -43,6 +49,7 @@ export interface Entitlement {
   lastKnownUserKeyHash?: string;
   lastOrderId?: string;
   lastSku?: string;
+  streakShields?: StreakShieldEntry[];
 }
 
 export interface AppState {
@@ -56,3 +63,4 @@ export interface AppState {
 
 export const APP_STATE_SCHEMA_VERSION = 1;
 export const FREE_ROUTINE_LIMIT = 3;
+export const STREAK_SHIELD_MONTHLY_LIMIT = 2;

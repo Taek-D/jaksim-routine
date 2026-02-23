@@ -6,6 +6,7 @@ import confetti from "canvas-confetti";
 
 interface BadgeOverlayProps {
   badge: Badge | null;
+  isPremium: boolean;
   onClose: () => void;
 }
 
@@ -25,7 +26,16 @@ const BADGE_MESSAGE: Record<BadgeType, string> = {
   COMEBACK: "건너뜀 이후 다시 돌아왔어요.",
 };
 
-export default function BadgeOverlay({ badge, onClose }: BadgeOverlayProps) {
+function handleShare(badgeType: BadgeType) {
+  const label = BADGE_LABEL[badgeType];
+  const text = `작심루틴에서 ${label} 배지를 획득했어요! 🏅`;
+
+  if (typeof navigator.share === "function") {
+    void navigator.share({ text });
+  }
+}
+
+export default function BadgeOverlay({ badge, isPremium, onClose }: BadgeOverlayProps) {
   useEffect(() => {
     if (!badge) {
       return;
@@ -78,13 +88,32 @@ export default function BadgeOverlay({ badge, onClose }: BadgeOverlayProps) {
           {BADGE_LABEL[badge.badgeType]}
         </h2>
         <p className="text-[14px] text-gray-500 mb-5">{BADGE_MESSAGE[badge.badgeType]}</p>
-        <button
-          className="w-full h-[48px] rounded-xl bg-[#111827] text-white text-[15px] font-semibold shadow-sm active:scale-[0.98] transition-transform"
-          type="button"
-          onClick={onClose}
-        >
-          확인
-        </button>
+
+        {!isPremium && (
+          <p className="text-[12px] text-gray-400 mb-3">
+            프리미엄이면 친구에게 공유할 수 있어요
+          </p>
+        )}
+
+        <div className="w-full flex flex-col gap-2">
+          {isPremium && (
+            <button
+              className="w-full h-[48px] rounded-xl bg-amber-500 text-white text-[15px] font-semibold shadow-sm active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+              type="button"
+              onClick={() => handleShare(badge.badgeType)}
+            >
+              <Icon name="share" size={18} className="text-white" />
+              공유하기
+            </button>
+          )}
+          <button
+            className="w-full h-[48px] rounded-xl bg-[#111827] text-white text-[15px] font-semibold shadow-sm active:scale-[0.98] transition-transform"
+            type="button"
+            onClick={onClose}
+          >
+            확인
+          </button>
+        </div>
       </motion.section>
     </motion.div>
   );

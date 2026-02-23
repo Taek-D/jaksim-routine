@@ -11,13 +11,16 @@ import {
 } from "react";
 import {
   FREE_ROUTINE_LIMIT,
+  STREAK_SHIELD_MONTHLY_LIMIT,
   type AppState,
   type Badge,
   type CheckinStatus,
   type DayOfWeek,
   type Routine,
+  type StreakShieldEntry,
 } from "../domain/models";
 import { collectNewBadgesAfterCheckin } from "../domain/progress";
+import { getShieldedDatesForRoutine } from "./selectors";
 import { makeId } from "../utils/id";
 import { getKstDateStamp, getNowIso } from "../utils/date";
 import {
@@ -72,6 +75,8 @@ interface AppStateContextValue {
     sku: string
   ) => Promise<{ ok: boolean; orderId?: string; sku?: string; errorCode?: string }>;
   restorePurchases: () => Promise<{ restoredCount: number }>;
+  applyStreakShield: (routineId: string, date: string) => boolean;
+  getStreakShieldsRemaining: () => number;
   dismissTrialExpiredBanner: () => void;
   dismissRefundRevokedBanner: () => void;
   dismissBadgeNotice: () => void;
@@ -474,6 +479,9 @@ export function AppStateProvider({ children }: PropsWithChildren) {
           createdAt,
         },
       ];
+      const shieldedDates = routine
+        ? getShieldedDatesForRoutine(prev, routine.id)
+        : undefined;
       const newBadges =
         routine == null
           ? []
@@ -484,6 +492,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
               status,
               todayStamp: date,
               earnedAt: createdAt,
+              shieldedDates,
             });
 
       newBadges.forEach((badge) => earnedBadgeTypes.add(badge.badgeType));
@@ -532,6 +541,57 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       ),
     }));
   }, []);
+
+  const getStreakShieldsUsedThisMonth = useCallback(
+    (shields?: StreakShieldEntry[]): number => {
+      const entries = shields ?? state.entitlement.streakShields ?? [];
+      const now = getKstDateStamp();
+      const currentMonth = now.slice(0, 7); // "YYYY-MM"
+      return entries.filter((s) => {
+        const usedMonth = getKstDateStamp(new Date(s.usedAt)).slice(0, 7);
+        return usedMonth === currentMonth;
+      }).length;
+    },
+    [state.entitlement.streakShields]
+  );
+
+  const getStreakShieldsRemaining = useCallback((): number => {
+    return STREAK_SHIELD_MONTHLY_LIMIT - getStreakShieldsUsedThisMonth();
+  }, [getStreakShieldsUsedThisMonth]);
+
+  const applyStreakShield = useCallback(
+    (routineId: string, date: string): boolean => {
+      const remaining = getStreakShieldsRemaining();
+      if (remaining <= 0) {
+        return false;
+      }
+
+      const entry: StreakShieldEntry = {
+        routineId,
+        date,
+        usedAt: getNowIso(),
+      };
+
+      setState((prev) => {
+        const prevShields = prev.entitlement.streakShields ?? [];
+        // Prevent duplicate
+        if (prevShields.some((s) => s.routineId === routineId && s.date === date)) {
+          return prev;
+        }
+        return {
+          ...prev,
+          entitlement: {
+            ...prev.entitlement,
+            streakShields: [...prevShields, entry],
+          },
+        };
+      });
+
+      trackEvent("streak_shield_used", { routineId, date });
+      return true;
+    },
+    [getStreakShieldsRemaining]
+  );
 
   const startFreeTrial = useCallback(async () => {
     const userKeyHash = await ensureUserKeyHash();
@@ -679,6 +739,8 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       checkinRoutine,
       addNoteToCheckin,
       restartRoutine,
+      applyStreakShield,
+      getStreakShieldsRemaining,
       startFreeTrial,
       purchasePremium,
       restorePurchases,
@@ -702,6 +764,8 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       checkinRoutine,
       addNoteToCheckin,
       restartRoutine,
+      applyStreakShield,
+      getStreakShieldsRemaining,
       startFreeTrial,
       purchasePremium,
       restorePurchases,

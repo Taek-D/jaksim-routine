@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppState } from "../state/AppStateProvider";
 import {
+  detectShieldableBreak,
   getRoutineStreak,
   getTodayCheckin,
   getTodayRoutineStatus,
@@ -12,6 +13,7 @@ import { getGreeting } from "../utils/greeting";
 import { getRoutineColor } from "../utils/routineColor";
 import NoteModal from "../components/NoteModal";
 import WarningToast from "../components/WarningToast";
+import StreakShieldPrompt from "../components/StreakShieldPrompt";
 import { trackEvent } from "../analytics/analytics";
 import { Icon } from "../components/Icon";
 import { cn } from "@/lib/utils";
@@ -44,6 +46,8 @@ export default function HomePage() {
     checkinRoutine,
     addNoteToCheckin,
     deleteRoutine,
+    applyStreakShield,
+    getStreakShieldsRemaining,
   } = useAppState();
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -54,6 +58,7 @@ export default function HomePage() {
   const [inlineMemoId, setInlineMemoId] = useState<string | null>(null);
   const [inlineMemoText, setInlineMemoText] = useState("");
   const inlineMemoTimerRef = useRef<number | null>(null);
+  const [shieldPromptDismissed, setShieldPromptDismissed] = useState(false);
   const todayRoutines = getTodayTargetRoutines(state);
   const archivedCount = state.routines.filter((routine) => routine.archivedAt).length;
   const topStreak = state.routines.reduce(
@@ -66,6 +71,29 @@ export default function HomePage() {
   const totalCount = todayRoutines.length;
   const progress = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
   const greeting = getGreeting(getKstHour(), progress, topStreak, totalCount);
+
+  // Streak shield detection
+  const shieldsRemaining = getStreakShieldsRemaining();
+  const shieldCandidate = (() => {
+    if (shieldPromptDismissed) return null;
+    // Premium users with no shields left: don't show prompt
+    // Free users: always show (upsell opportunity)
+    if (isPremiumActive && shieldsRemaining <= 0) return null;
+    const activeRoutines = state.routines.filter((r) => !r.archivedAt);
+    for (const routine of activeRoutines) {
+      const result = detectShieldableBreak(state, routine);
+      if (result) {
+        return { routine, ...result };
+      }
+    }
+    return null;
+  })();
+
+  const handleUseShield = () => {
+    if (!shieldCandidate) return;
+    applyStreakShield(shieldCandidate.routine.id, shieldCandidate.missedDate);
+    setShieldPromptDismissed(true);
+  };
 
   const enterSelectMode = () => {
     setIsSelectMode(true);
@@ -464,6 +492,17 @@ export default function HomePage() {
         onConfirm={submitNoteModal}
         confirmLabel="완료로 저장"
       />
+
+      {shieldCandidate && (
+        <StreakShieldPrompt
+          routineTitle={shieldCandidate.routine.title}
+          restoredStreak={shieldCandidate.restoredStreak}
+          isPremium={isPremiumActive}
+          shieldsRemaining={shieldsRemaining}
+          onUseShield={handleUseShield}
+          onDismiss={() => setShieldPromptDismissed(true)}
+        />
+      )}
 
       <WarningToast
         open={skipTarget != null}

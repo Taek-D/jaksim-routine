@@ -5,7 +5,7 @@ import AppRoutes from "./AppRoutes";
 import { AnimatePresence } from "motion/react";
 
 function AppContent() {
-  const { hydrated, badgeNotice, dismissBadgeNotice } = useAppState();
+  const { hydrated, badgeNotice, dismissBadgeNotice, isPremiumActive } = useAppState();
 
   if (!hydrated) {
     return (
@@ -23,6 +23,7 @@ function AppContent() {
           <BadgeOverlay
             key={badgeNotice.badgeType}
             badge={badgeNotice}
+            isPremium={isPremiumActive}
             onClose={dismissBadgeNotice}
           />
         )}

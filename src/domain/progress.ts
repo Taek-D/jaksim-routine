@@ -46,7 +46,8 @@ function isRoutineTargetDate(routine: Routine, dateStamp: string): boolean {
 export function getRoutineCurrentStreak(
   routine: Routine,
   routineCheckins: Checkin[],
-  todayStamp: string = getKstDateStamp()
+  todayStamp: string = getKstDateStamp(),
+  shieldedDates?: Set<string>
 ): number {
   const startStamp = getRoutineStartDateStamp(routine);
   const statusByDate = buildRoutineDateStatusMap(routineCheckins);
@@ -55,6 +56,11 @@ export function getRoutineCurrentStreak(
 
   for (let guard = 0; guard < 4000 && cursor >= startStamp; guard += 1) {
     if (!isRoutineTargetDate(routine, cursor)) {
+      cursor = addDaysToKstDateStamp(cursor, -1);
+      continue;
+    }
+
+    if (shieldedDates?.has(cursor)) {
       cursor = addDaysToKstDateStamp(cursor, -1);
       continue;
     }
@@ -245,8 +251,9 @@ export function collectNewBadgesAfterCheckin(params: {
   status: CheckinStatus;
   todayStamp: string;
   earnedAt: string;
+  shieldedDates?: Set<string>;
 }): Badge[] {
-  const { prevState, routine, nextCheckins, status, todayStamp, earnedAt } = params;
+  const { prevState, routine, nextCheckins, status, todayStamp, earnedAt, shieldedDates } = params;
   if (status !== "COMPLETED") {
     return [];
   }
@@ -259,7 +266,7 @@ export function collectNewBadgesAfterCheckin(params: {
     pushBadgeIfNeeded(newBadges, earned, "FIRST_CHECKIN", earnedAt);
   }
 
-  const streak = getRoutineCurrentStreak(routine, routineCheckins, todayStamp);
+  const streak = getRoutineCurrentStreak(routine, routineCheckins, todayStamp, shieldedDates);
   STREAK_BADGE_CONDITIONS.forEach(({ minStreak, badgeType }) => {
     if (streak >= minStreak) {
       pushBadgeIfNeeded(newBadges, earned, badgeType, earnedAt);
@@ -298,4 +305,77 @@ export function getRoutineRecentCheckins(
       return a.date < b.date ? 1 : -1;
     })
     .slice(0, limit);
+}
+
+/* ── Premium UX data helpers ── */
+
+export interface HeatmapCell {
+  date: string;
+  count: number;
+  level: 0 | 1 | 2 | 3 | 4;
+}
+
+export function buildHeatmapData(state: AppState, days = 30): HeatmapCell[] {
+  const today = getKstDateStamp();
+  const countByDate = new Map<string, number>();
+
+  state.checkins.forEach((checkin) => {
+    if (checkin.status === "COMPLETED") {
+      countByDate.set(checkin.date, (countByDate.get(checkin.date) ?? 0) + 1);
+    }
+  });
+
+  const cells: HeatmapCell[] = [];
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const date = addDaysToKstDateStamp(today, -i);
+    const count = countByDate.get(date) ?? 0;
+    let level: HeatmapCell["level"] = 0;
+    if (count >= 4) level = 4;
+    else if (count >= 3) level = 3;
+    else if (count >= 2) level = 2;
+    else if (count >= 1) level = 1;
+    cells.push({ date, count, level });
+  }
+
+  return cells;
+}
+
+export interface WeekTrendPoint {
+  weekLabel: string;
+  completionRate: number;
+}
+
+export function buildMonthlyTrend(state: AppState, weeks = 4): WeekTrendPoint[] {
+  const points: WeekTrendPoint[] = [];
+  for (let offset = -(weeks - 1); offset <= 0; offset += 1) {
+    const report = buildWeeklyReportSummary(state, offset);
+    points.push({
+      weekLabel: report.weekLabel,
+      completionRate: report.completionRate,
+    });
+  }
+  return points;
+}
+
+export interface NoteEntry {
+  date: string;
+  routineTitle: string;
+  note: string;
+}
+
+export function getRecentNotes(state: AppState, limit = 20): NoteEntry[] {
+  const routineMap = new Map<string, string>();
+  state.routines.forEach((routine) => {
+    routineMap.set(routine.id, routine.title);
+  });
+
+  return state.checkins
+    .filter((checkin): checkin is Checkin & { note: string } => Boolean(checkin.note))
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+    .slice(0, limit)
+    .map((checkin) => ({
+      date: checkin.date,
+      routineTitle: routineMap.get(checkin.routineId) ?? "삭제된 루틴",
+      note: checkin.note,
+    }));
 }

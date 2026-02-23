@@ -154,8 +154,13 @@ export default function PaywallPage() {
             },
             {
               icon: "bar_chart",
-              title: "확장 통계 (Coming Soon)",
-              desc: "월간 분석과 상세 리포트로 성장을 확인하세요",
+              title: "캘린더 히트맵 & 월간 트렌드",
+              desc: "30일 체크인 히트맵과 주간 달성률 추이를 확인하세요",
+            },
+            {
+              icon: "shield",
+              title: "스트릭 보호권 (월 2회)",
+              desc: "놓친 하루를 보호해서 소중한 스트릭을 지키세요",
             },
             {
               icon: "folder_special",
