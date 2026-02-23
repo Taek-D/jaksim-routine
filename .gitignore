@@ -7,4 +7,6 @@ pnpm-lock.yaml
 .env.local
 .playwright-mcp/
 *.ait
-
+.claude/agent-memory/
+.granite/
+zip (1)/
