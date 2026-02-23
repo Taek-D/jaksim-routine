@@ -87,7 +87,7 @@ export default function OnboardingPage() {
             <h1 className="text-[22px] font-bold text-[#101828] mb-3 leading-tight">
               {slide.title}
             </h1>
-            <p className="text-[15px] text-gray-500 leading-relaxed">
+            <p className="text-[15px] text-gray-600 leading-relaxed">
               {slide.description}
             </p>
           </motion.div>

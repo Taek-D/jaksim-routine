@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAppState } from "../state/AppStateProvider";
 import {
   getRoutineStreak,
+  getTodayCheckin,
   getTodayRoutineStatus,
   getTodayTargetRoutines,
 } from "../state/selectors";
@@ -13,6 +14,7 @@ import { trackEvent } from "../analytics/analytics";
 import { Icon } from "../components/Icon";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
+import confetti from "canvas-confetti";
 
 interface RoutineActionTarget {
   routineId: string;
@@ -78,6 +80,11 @@ export default function HomePage() {
     });
     checkinRoutine(noteTarget.routineId, "COMPLETED", noteDraft);
     closeNoteModal();
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+    });
   };
 
   const openSkipWarning = (routineId: string, title: string, prevStreak: number) => {
@@ -196,12 +203,12 @@ export default function HomePage() {
                   {progress}% 달성
                 </div>
               </div>
-              <div className="w-full bg-[#f2f4f7] rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-[#f2f4f7] rounded-full h-3 overflow-hidden shadow-inner">
                 <motion.div
-                  className="bg-[#111827] h-full rounded-full"
+                  className="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full shadow-sm"
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
                 />
               </div>
             </section>
@@ -229,9 +236,11 @@ export default function HomePage() {
           {todayRoutines.length > 0 && (
             <section className="flex flex-col gap-3">
               {todayRoutines.map((routine) => {
-                const todayStatus = getTodayRoutineStatus(state, routine.id);
+                const todayCheckin = getTodayCheckin(state, routine.id);
+                const todayStatus = todayCheckin?.status ?? null;
                 const currentStreak = getRoutineStreak(state, routine.id);
                 const isCompleted = todayStatus === "COMPLETED";
+                const note = todayCheckin?.note;
 
                 return (
                   <motion.article
@@ -240,8 +249,8 @@ export default function HomePage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className={cn(
-                      "bg-white rounded-[20px] p-5 shadow-sm flex flex-col gap-4 relative overflow-hidden transition-all",
-                      isCompleted && "bg-gray-50"
+                      "bg-white rounded-[20px] p-5 shadow-sm flex flex-col gap-4 relative overflow-hidden transition-all border border-transparent",
+                      isCompleted && "bg-emerald-50/60 border-emerald-100 shadow-emerald-100/50"
                     )}
                   >
                     {isCompleted && (
@@ -269,17 +278,19 @@ export default function HomePage() {
                             </span>
                           )}
                         </div>
-                        <Link
-                          to={`/routine/${routine.id}`}
-                          className={cn(
-                            "text-[18px] font-bold transition-colors hover:underline decoration-2 underline-offset-4",
-                            isCompleted
-                              ? "text-gray-400 line-through decoration-gray-400 decoration-2"
-                              : "text-[#101828]"
+                        <div className="flex flex-col gap-0.5">
+                          <Link
+                            to={`/routine/${routine.id}`}
+                            className="text-[18px] font-bold text-[#101828] transition-colors hover:underline decoration-2 underline-offset-4"
+                          >
+                            {routine.title}
+                          </Link>
+                          {isCompleted && note && (
+                            <p className="text-[14px] text-gray-600 mt-1 pl-3 border-l-[3px] border-emerald-300 bg-white/50 py-1 pr-2 rounded-r-md">
+                              {note}
+                            </p>
                           )}
-                        >
-                          {routine.title}
-                        </Link>
+                        </div>
                       </div>
                       {!isCompleted && todayStatus !== "SKIPPED" && (
                         <Link to={`/routine/${routine.id}`} className="text-gray-400 hover:text-gray-600">
@@ -288,48 +299,55 @@ export default function HomePage() {
                       )}
                     </div>
 
-                    <div className="grid grid-cols-[1fr_1fr_auto] gap-2 z-10">
-                      {isCompleted || todayStatus === "SKIPPED" ? (
-                        <button
-                          className="col-span-3 h-[42px] rounded-xl bg-gray-100 text-gray-400 text-[14px] font-medium flex items-center justify-center gap-1.5 hover:bg-gray-200 transition-colors"
-                          type="button"
-                          disabled
-                        >
-                          {isCompleted ? "잘했어요!" : "건너뜀 처리됨"}
-                        </button>
-                      ) : (
-                        <>
+                    {!isCompleted && (
+                      <div className="grid grid-cols-[1fr_1fr_auto] gap-2 z-10">
+                        {todayStatus === "SKIPPED" ? (
                           <button
-                            className="h-[46px] rounded-xl bg-[#111827] text-white text-[15px] font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center shadow-sm active:scale-95"
+                            className="col-span-3 h-[42px] rounded-xl bg-gray-100 text-gray-400 text-[14px] font-medium flex items-center justify-center gap-1.5 hover:bg-gray-200 transition-colors"
                             type="button"
-                            onClick={() => {
-                              trackEvent("checkin_complete", {
-                                routineId: routine.id,
-                                withNote: false,
-                              });
-                              checkinRoutine(routine.id, "COMPLETED");
-                            }}
+                            disabled
                           >
-                            완료
+                            건너뜀 처리됨
                           </button>
-                          <button
-                            className="h-[46px] rounded-xl bg-[#f2f4f7] text-[#344054] text-[15px] font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-1 active:scale-95"
-                            type="button"
-                            onClick={() => openNoteModal(routine.id, routine.title)}
-                          >
-                            <Icon name="edit_note" size={18} />
-                            메모
-                          </button>
-                          <button
-                            className="h-[46px] w-[46px] rounded-xl bg-white border border-gray-200 text-[#475467] hover:bg-gray-50 transition-colors flex items-center justify-center active:scale-95"
-                            type="button"
-                            onClick={() => openSkipWarning(routine.id, routine.title, currentStreak)}
-                          >
-                            <Icon name="fast_forward" size={20} />
-                          </button>
-                        </>
-                      )}
-                    </div>
+                        ) : (
+                          <>
+                            <button
+                              className="h-[46px] rounded-xl bg-[#111827] text-white text-[15px] font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center shadow-sm active:scale-95"
+                              type="button"
+                              onClick={() => {
+                                trackEvent("checkin_complete", {
+                                  routineId: routine.id,
+                                  withNote: false,
+                                });
+                                checkinRoutine(routine.id, "COMPLETED");
+                                confetti({
+                                  particleCount: 100,
+                                  spread: 70,
+                                  origin: { y: 0.6 },
+                                });
+                              }}
+                            >
+                              완료
+                            </button>
+                            <button
+                              className="h-[46px] rounded-xl bg-[#f2f4f7] text-[#344054] text-[15px] font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-1 active:scale-95"
+                              type="button"
+                              onClick={() => openNoteModal(routine.id, routine.title)}
+                            >
+                              <Icon name="edit_note" size={18} />
+                              메모
+                            </button>
+                            <button
+                              className="h-[46px] w-[46px] rounded-xl bg-white border border-gray-200 text-[#475467] hover:bg-gray-50 transition-colors flex items-center justify-center active:scale-95"
+                              type="button"
+                              onClick={() => openSkipWarning(routine.id, routine.title, currentStreak)}
+                            >
+                              <Icon name="fast_forward" size={20} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </motion.article>
                 );
               })}

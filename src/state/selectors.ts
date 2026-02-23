@@ -1,11 +1,14 @@
-import type { AppState, CheckinStatus, Routine } from "../domain/models";
+import type { AppState, CheckinStatus, Routine, Checkin } from "../domain/models";
 import { getRoutineCurrentStreak } from "../domain/progress";
 import { getKstDateStamp, getKstWeekday } from "../utils/date";
 
-export function getTodayRoutineStatus(state: AppState, routineId: string): CheckinStatus | null {
+export function getTodayCheckin(state: AppState, routineId: string): Checkin | undefined {
   const today = getKstDateStamp();
-  const item = state.checkins.find((checkin) => checkin.routineId === routineId && checkin.date === today);
-  return item?.status ?? null;
+  return state.checkins.find((checkin) => checkin.routineId === routineId && checkin.date === today);
+}
+
+export function getTodayRoutineStatus(state: AppState, routineId: string): CheckinStatus | null {
+  return getTodayCheckin(state, routineId)?.status ?? null;
 }
 
 export function getTodayTargetRoutines(state: AppState): Routine[] {

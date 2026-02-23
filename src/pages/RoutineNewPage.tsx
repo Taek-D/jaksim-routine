@@ -131,7 +131,7 @@ export default function RoutineNewPage() {
                   type="button"
                   onClick={() => toggleDay(day)}
                   className={cn(
-                    "w-11 h-11 rounded-full flex items-center justify-center text-[14px] font-medium transition-all",
+                    "w-11 h-11 rounded-full flex items-center justify-center text-[14px] font-medium transition-all active:scale-90",
                     isSelected
                       ? "bg-[#111827] text-white font-semibold shadow-md shadow-gray-900/10"
                       : "bg-[#f2f4f7] text-[#344054] hover:bg-gray-200"

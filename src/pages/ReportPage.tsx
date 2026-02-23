@@ -163,40 +163,32 @@ export default function ReportPage() {
           <div className="flex justify-between items-center px-1 mb-3">
             <h2 className="text-[16px] font-bold text-[#101828]">획득 배지</h2>
           </div>
-          {state.badges.length === 0 && (
-            <div className="bg-white rounded-[20px] p-5 shadow-sm">
-              <p className="text-[14px] text-gray-400">아직 획득한 배지가 없어요.</p>
-            </div>
-          )}
-          {state.badges.length > 0 && (
-            <div className="grid grid-cols-3 gap-3">
-              {state.badges.map((badge) => {
-                const display = BADGE_DISPLAY[badge.badgeType] ?? {
-                  icon: "🏅",
-                  label: badge.badgeType,
-                  color: "bg-gray-50 border-gray-200",
-                };
-                return (
+          <div className="grid grid-cols-3 gap-3">
+            {Object.entries(BADGE_DISPLAY).map(([type, display]) => {
+              const earned = state.badges.find((b) => b.badgeType === type);
+              return (
+                <div
+                  key={type}
+                  className={cn(
+                    "flex flex-col items-center gap-2 p-3 bg-white rounded-xl border border-gray-200 shadow-sm transition-all",
+                    !earned && "opacity-50 grayscale"
+                  )}
+                >
                   <div
-                    key={`${badge.badgeType}-${badge.earnedAt}`}
-                    className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl border border-gray-200 shadow-sm"
+                    className={cn(
+                      "w-12 h-12 rounded-full border flex items-center justify-center text-[24px]",
+                      earned ? display.color : "bg-gray-50 border-gray-200"
+                    )}
                   >
-                    <div
-                      className={cn(
-                        "w-12 h-12 rounded-full border flex items-center justify-center text-[24px]",
-                        display.color
-                      )}
-                    >
-                      {display.icon}
-                    </div>
-                    <span className="text-[12px] font-semibold text-[#101828] text-center">
-                      {display.label}
-                    </span>
+                    {display.icon}
                   </div>
-                );
-              })}
-            </div>
-          )}
+                  <span className="text-[12px] font-semibold text-[#101828] text-center">
+                    {display.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </section>
       </main>
     </div>
