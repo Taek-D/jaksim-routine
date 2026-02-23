@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-02-22T13:38:21.176Z",
+  "lastUpdated": "2026-02-23T08:46:35.069Z",
   "activeFeatures": [
     "작심루틴",
     "backend",
@@ -17,17 +17,12 @@
       "archivedTo": "docs/archive/2026-02/mvp-launch/"
     },
     "작심루틴": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-02-22T12:40:59.623Z",
-        "lastUpdated": "2026-02-22T13:38:21.176Z"
-      },
-      "lastFile": "E:\\프로젝트\\앱인토스\\작심루틴\\src\\pages\\EntitlementHistoryPage.tsx"
+      "phase": "archived",
+      "matchRate": 93,
+      "iterationCount": 1,
+      "startedAt": "2026-02-22T12:40:59.623Z",
+      "archivedAt": "2026-02-23T12:00:00.000Z",
+      "archivedTo": "docs/archive/2026-02/작심루틴/"
     },
     "backend": {
       "phase": "do",
@@ -64,7 +59,7 @@
   "session": {
     "startedAt": "2026-02-22T07:15:07.533Z",
     "onboardingCompleted": true,
-    "lastActivity": "2026-02-22T13:38:21.176Z"
+    "lastActivity": "2026-02-23T08:46:35.069Z"
   },
   "history": [
     {
@@ -170,6 +165,252 @@
     },
     {
       "timestamp": "2026-02-22T13:38:21.176Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-22T14:14:14.664Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-22T14:14:21.511Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-22T14:25:14.702Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:31:47.205Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:32:18.669Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:32:21.253Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:32:56.705Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:33:13.122Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:33:21.228Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:33:26.443Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:34:35.752Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:34:59.697Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:35:28.072Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:35:59.121Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:36:26.418Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:37:04.143Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:37:37.923Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:38:23.173Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:38:42.321Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:38:52.385Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T07:39:25.707Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:28:15.450Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:28:22.480Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:28:41.127Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:28:49.354Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:28:57.785Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:29:01.019Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:29:04.504Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:29:28.442Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:29:33.411Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:29:41.060Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:29:43.113Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:29:48.961Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:29:50.475Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:46:04.918Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:46:11.545Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:46:13.249Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:46:16.026Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:46:25.411Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:46:32.223Z",
+      "feature": "작심루틴",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-02-23T08:46:35.069Z",
       "feature": "작심루틴",
       "phase": "do",
       "action": "updated"
