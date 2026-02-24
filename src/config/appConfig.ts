@@ -1,4 +1,4 @@
-const DEFAULT_SUPPORT_EMAIL = "jaksim-routine-support@example.com";
+const DEFAULT_SUPPORT_EMAIL = "atef21422@gmail.com";
 const DEFAULT_TERMS_URL = "https://example.com/terms";
 const DEFAULT_PRIVACY_URL = "https://example.com/privacy";
 

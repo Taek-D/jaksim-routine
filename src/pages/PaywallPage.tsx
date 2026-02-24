@@ -259,7 +259,13 @@ export default function PaywallPage() {
             }
           }}
         >
-          {busySku === "trial" ? "시작 중..." : busySku ? "처리 중..." : "7일 무료 체험 시작하기"}
+          {busySku === "trial"
+            ? "시작 중..."
+            : busySku
+              ? "처리 중..."
+              : selectedSku
+                ? `${products.find((p) => p.sku === selectedSku)?.priceLabel ?? ""} 구매하기`
+                : "7일 무료 체험 시작하기"}
         </button>
         <button
           className="w-full text-gray-500 text-[14px] font-medium h-[32px] flex items-center justify-center hover:text-[#101828] transition-colors"
