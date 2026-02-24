@@ -46,7 +46,7 @@ export default function ReportPage() {
   const { state, isPremiumActive: _isPremiumActive } = useAppState();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const isPremiumActive = searchParams.get("free") === "1" ? false : _isPremiumActive;
+  const isPremiumActive = import.meta.env.DEV && searchParams.get("free") === "1" ? false : _isPremiumActive;
   const hasTrackedReportViewRef = useRef(false);
   const lastWeekOffsetRef = useRef(0);
   const [weekOffset, setWeekOffset] = useState(0);

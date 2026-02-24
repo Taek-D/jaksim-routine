@@ -188,6 +188,8 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   const badgeWatcherReadyRef = useRef(false);
   const knownBadgeCountRef = useRef(0);
   const entitlementRestoreDoneRef = useRef(false);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   const resolveUserKeyHash = useCallback(
     (targetState: AppState = state) =>
@@ -351,7 +353,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     }
 
     setState((prev) => applyRoutineArchivePolicy(prev));
-  }, [hydrated, state.entitlement.premiumUntil, state.routines]);
+  }, [hydrated, state.entitlement.premiumUntil]);
 
   useEffect(() => {
     if (!hydrated || entitlementRestoreDoneRef.current) {
@@ -415,7 +417,8 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
   const createRoutine = useCallback(
     (input: CreateRoutineInput) => {
-      const activeCount = state.routines.filter((routine) => !routine.archivedAt).length;
+      const currentRoutines = stateRef.current.routines;
+      const activeCount = currentRoutines.filter((routine) => !routine.archivedAt).length;
       if (!isPremiumActive && activeCount >= FREE_ROUTINE_LIMIT) {
         return { ok: false as const, reason: "LIMIT_REACHED" as const };
       }
@@ -428,10 +431,16 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         createdAt: getNowIso(),
       };
 
-      setState((prev) => ({ ...prev, routines: [...prev.routines, newRoutine] }));
+      setState((prev) => {
+        const prevActiveCount = prev.routines.filter((r) => !r.archivedAt).length;
+        if (!isPremiumActive && prevActiveCount >= FREE_ROUTINE_LIMIT) {
+          return prev;
+        }
+        return { ...prev, routines: [...prev.routines, newRoutine] };
+      });
       return { ok: true as const };
     },
-    [isPremiumActive, state.routines]
+    [isPremiumActive]
   );
 
   const updateRoutine = useCallback((routineId: string, input: UpdateRoutineInput) => {
@@ -561,8 +570,12 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
   const applyStreakShield = useCallback(
     (routineId: string, date: string): boolean => {
-      const remaining = getStreakShieldsRemaining();
-      if (remaining <= 0) {
+      const currentShields = stateRef.current.entitlement.streakShields ?? [];
+      if (currentShields.some((s) => s.routineId === routineId && s.date === date)) {
+        return false;
+      }
+      const usedThisMonth = getStreakShieldsUsedThisMonth(currentShields);
+      if (usedThisMonth >= STREAK_SHIELD_MONTHLY_LIMIT) {
         return false;
       }
 
@@ -574,8 +587,11 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
       setState((prev) => {
         const prevShields = prev.entitlement.streakShields ?? [];
-        // Prevent duplicate
         if (prevShields.some((s) => s.routineId === routineId && s.date === date)) {
+          return prev;
+        }
+        const prevUsedThisMonth = getStreakShieldsUsedThisMonth(prevShields);
+        if (prevUsedThisMonth >= STREAK_SHIELD_MONTHLY_LIMIT) {
           return prev;
         }
         return {
@@ -590,13 +606,13 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       trackEvent("streak_shield_used", { routineId, date });
       return true;
     },
-    [getStreakShieldsRemaining]
+    [getStreakShieldsUsedThisMonth]
   );
 
   const startFreeTrial = useCallback(async () => {
     const userKeyHash = await ensureUserKeyHash();
     const gate = await entitlementBackend.getTrialGate(userKeyHash);
-    if (gate.trialUsed || state.entitlement.trialUsedLocal) {
+    if (gate.trialUsed || stateRef.current.entitlement.trialUsedLocal) {
       return { ok: false as const, reason: "ALREADY_USED" as const };
     }
 
@@ -618,7 +634,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     }));
 
     return { ok: true as const };
-  }, [ensureUserKeyHash, state.entitlement.trialUsedLocal]);
+  }, [ensureUserKeyHash]);
 
   const purchasePremium = useCallback(async (sku: string) => {
     const userKeyHash = await ensureUserKeyHash();

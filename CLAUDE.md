@@ -69,3 +69,35 @@ src/
 - Use class components
 - Skip null/undefined checks on SDK bridge calls
 - Hardcode date calculations without KST consideration
+
+## Session Log
+
+### 2026-02-24: Streak Shield (스트릭 보호권) 구현 완료
+
+**구현 내용:**
+- 프리미엄 사용자에게 월 2회 스트릭 보호권 제공 (STREAK_SHIELD_MONTHLY_LIMIT = 2)
+- 놓친 날을 보호하면 스트릭 유지 (보호된 날은 스트릭 일수에 포함되지 않음)
+- 무료 사용자에게는 업셀 프롬프트 → Paywall 이동 (trigger=streak_shield)
+- 보호권 소진 시 프리미엄 사용자에게 프롬프트 미표시
+
+**수정 파일 (7개):**
+- `src/domain/models.ts` — StreakShieldEntry 타입, streakShields 필드, STREAK_SHIELD_MONTHLY_LIMIT 상수
+- `src/domain/progress.ts` — getRoutineCurrentStreak에 shieldedDates 파라미터, collectNewBadgesAfterCheckin에 shieldedDates 전달
+- `src/state/selectors.ts` — getShieldedDatesForRoutine, getRoutineStreak shields 전달, detectShieldableBreak 함수
+- `src/state/AppStateProvider.tsx` — applyStreakShield, getStreakShieldsRemaining, getStreakShieldsUsedThisMonth, context 노출
+- `src/components/StreakShieldPrompt.tsx` — 신규 프롬프트 컴포넌트 (프리미엄/무료 분기)
+- `src/pages/HomePage.tsx` — 감지 로직 + 프롬프트 연결 + 세션 내 1회 표시
+- `src/pages/PaywallPage.tsx` — streak_shield 트리거, 보호권 피처 설명 추가
+
+**코드 검증 중 발견/수정한 버그:**
+1. `useStreakShield` → `applyStreakShield`로 리네임 (ESLint react-hooks/rules-of-hooks 위반)
+2. 보호권 소진 후에도 프리미엄 사용자에게 프롬프트가 표시되는 버그 수정
+3. 월별 사용량 카운트가 shielded date 기준이 아닌 usedAt 기준으로 수정
+
+**커밋:**
+- `0669bb3` feat: add streak shield and premium UX enhancements
+- `4230b54` chore: gitignore bkit/pdca tooling files and remove from tracking
+
+**미완료:**
+- 브라우저에서 직접 E2E 테스트 (코드 레벨 검증은 완료)
+- 무료 사용자 시나리오 브라우저 확인 필요
