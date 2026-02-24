@@ -4,18 +4,8 @@ import { trackEvent } from "../analytics/analytics";
 import type { DayOfWeek } from "../domain/models";
 import { useAppState } from "../state/AppStateProvider";
 import { Icon } from "../components/Icon";
-import { cn } from "@/lib/utils";
-
-const allDays: DayOfWeek[] = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
-const dayLabel: Record<DayOfWeek, string> = {
-  MON: "월",
-  TUE: "화",
-  WED: "수",
-  THU: "목",
-  FRI: "금",
-  SAT: "토",
-  SUN: "일",
-};
+import DaySelector from "../components/DaySelector";
+import RoutineNotFound from "../components/RoutineNotFound";
 
 function clampGoalPerDay(value: number): number {
   return Math.max(1, Math.min(10, value));
@@ -37,28 +27,7 @@ export default function RoutineEditPage() {
   );
 
   if (!routine) {
-    return (
-      <div className="flex flex-col h-full bg-white">
-        <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-md px-4 h-[56px] flex items-center border-b border-gray-100">
-          <button onClick={() => navigate("/home")} className="w-10 h-10 flex items-center justify-start text-gray-600" type="button">
-            <Icon name="arrow_back" size={24} />
-          </button>
-        </header>
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="bg-white rounded-[20px] p-8 shadow-sm flex flex-col items-center gap-4 text-center">
-            <Icon name="search_off" size={48} className="text-gray-300" />
-            <h1 className="text-[20px] font-bold text-[#101828]">루틴을 찾을 수 없어요</h1>
-            <button
-              className="h-[44px] px-6 rounded-xl bg-[#f2f4f7] text-[#344054] text-[15px] font-medium hover:bg-gray-200 transition-colors"
-              type="button"
-              onClick={() => navigate("/home")}
-            >
-              홈으로
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <RoutineNotFound />;
   }
 
   return (
@@ -117,33 +86,14 @@ export default function RoutineEditPage() {
         {/* Day Selection */}
         <section>
           <p className="block text-[15px] font-bold text-[#101828] mb-4">목표 요일</p>
-          <div className="flex justify-between items-center px-1">
-            {allDays.map((day) => {
-              const isSelected = days.includes(day);
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  onClick={() =>
-                    setDays((prev) =>
-                      prev.includes(day) ? prev.filter((item) => item !== day) : [...prev, day]
-                    )
-                  }
-                  className={cn(
-                    "w-11 h-11 rounded-full flex items-center justify-center text-[14px] font-medium transition-all active:scale-90",
-                    isSelected
-                      ? "bg-[#111827] text-white font-semibold shadow-md shadow-gray-900/10"
-                      : "bg-[#f2f4f7] text-[#344054] hover:bg-gray-200"
-                  )}
-                >
-                  {dayLabel[day]}
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-4 text-[14px] text-gray-500 text-center">
-            매주 <span className="text-[#101828] font-semibold">{days.length}일</span> 실천해요
-          </p>
+          <DaySelector
+            days={days}
+            onToggle={(day) =>
+              setDays((prev) =>
+                prev.includes(day) ? prev.filter((item) => item !== day) : [...prev, day]
+              )
+            }
+          />
         </section>
 
         {/* Delete */}

@@ -17,14 +17,29 @@ export function createInitialAppState(): AppState {
   };
 }
 
+function isValidAppState(value: unknown): value is AppState {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const obj = value as Record<string, unknown>;
+  return (
+    obj.schemaVersion === APP_STATE_SCHEMA_VERSION &&
+    Array.isArray(obj.routines) &&
+    Array.isArray(obj.checkins) &&
+    Array.isArray(obj.badges) &&
+    typeof obj.entitlement === "object" &&
+    obj.entitlement !== null
+  );
+}
+
 function parseState(raw: string | null): AppState | null {
   if (!raw) {
     return null;
   }
 
   try {
-    const parsed = JSON.parse(raw) as AppState;
-    if (parsed.schemaVersion !== APP_STATE_SCHEMA_VERSION) {
+    const parsed: unknown = JSON.parse(raw);
+    if (!isValidAppState(parsed)) {
       return null;
     }
     return parsed;

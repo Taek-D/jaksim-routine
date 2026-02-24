@@ -5,18 +5,8 @@ import type { DayOfWeek } from "../domain/models";
 import { useAppState } from "../state/AppStateProvider";
 import { trackEvent } from "../analytics/analytics";
 import { Icon } from "../components/Icon";
+import DaySelector from "../components/DaySelector";
 import { cn } from "@/lib/utils";
-
-const allDays: DayOfWeek[] = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
-const dayLabel: Record<DayOfWeek, string> = {
-  MON: "월",
-  TUE: "화",
-  WED: "수",
-  THU: "목",
-  FRI: "금",
-  SAT: "토",
-  SUN: "일",
-};
 
 export default function RoutineNewPage() {
   const navigate = useNavigate();
@@ -122,29 +112,7 @@ export default function RoutineNewPage() {
         {/* Day Selection */}
         <section className="mb-6">
           <label className="block text-[15px] font-bold text-[#101828] mb-4">실천할 요일</label>
-          <div className="flex justify-between items-center px-1">
-            {allDays.map((day) => {
-              const isSelected = days.includes(day);
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  onClick={() => toggleDay(day)}
-                  className={cn(
-                    "w-11 h-11 rounded-full flex items-center justify-center text-[14px] font-medium transition-all active:scale-90",
-                    isSelected
-                      ? "bg-[#111827] text-white font-semibold shadow-md shadow-gray-900/10"
-                      : "bg-[#f2f4f7] text-[#344054] hover:bg-gray-200"
-                  )}
-                >
-                  {dayLabel[day]}
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-4 text-[14px] text-gray-500 text-center">
-            매주 <span className="text-[#101828] font-semibold">{days.length}일</span> 실천해요
-          </p>
+          <DaySelector days={days} onToggle={toggleDay} />
         </section>
       </main>
 

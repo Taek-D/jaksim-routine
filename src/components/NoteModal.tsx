@@ -34,17 +34,35 @@ export default function NoteModal({
     textareaRef.current?.focus();
   }, [open]);
 
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onCancel();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, onCancel]);
+
   if (!open) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm flex justify-center items-end p-4" role="presentation">
+    <div
+      className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm flex justify-center items-end p-4"
+      role="presentation"
+      onClick={onCancel}
+    >
       <div
         className="w-[min(100%,560px)] bg-white rounded-2xl shadow-[0_16px_32px_rgba(16,24,40,0.2)] p-5 flex flex-col gap-3"
         role="dialog"
         aria-modal="true"
         aria-labelledby="checkin-note-title"
+        onClick={(e) => e.stopPropagation()}
       >
         <h2 id="checkin-note-title" className="text-[16px] font-bold text-[#101828]">
           {title}
