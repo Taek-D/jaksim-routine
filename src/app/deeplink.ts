@@ -1,4 +1,11 @@
-const SUPPORTED_TARGETS = new Set(["/home", "/report", "/routine/new"]);
+const SUPPORTED_TARGETS = new Set([
+  "/home",
+  "/report",
+  "/routine/new",
+  "/settings",
+  "/paywall",
+]);
+const DYNAMIC_ROUTE_PATTERNS = [/^\/routine\/[a-zA-Z0-9_-]+$/];
 const APP_SCHEME_PREFIX = "intoss://jaksim-routine/";
 const APP_PATH_PREFIX = "/jaksim-routine/";
 
@@ -10,15 +17,26 @@ function normalizePathCandidate(path: string): string {
   return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
 }
 
+function matchesDynamicRoute(path: string): boolean {
+  return DYNAMIC_ROUTE_PATTERNS.some((pattern) => pattern.test(path));
+}
+
 function toSupportedTarget(path: string): string | null {
   const normalizedPath = normalizePathCandidate(path);
   if (SUPPORTED_TARGETS.has(normalizedPath)) {
     return normalizedPath;
   }
 
+  if (matchesDynamicRoute(normalizedPath)) {
+    return normalizedPath;
+  }
+
   if (normalizedPath.startsWith(APP_PATH_PREFIX)) {
     const withoutPrefix = `/${normalizedPath.slice(APP_PATH_PREFIX.length)}`;
     if (SUPPORTED_TARGETS.has(withoutPrefix)) {
+      return withoutPrefix;
+    }
+    if (matchesDynamicRoute(withoutPrefix)) {
       return withoutPrefix;
     }
   }

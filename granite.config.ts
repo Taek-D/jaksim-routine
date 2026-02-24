@@ -8,7 +8,7 @@ export default defineConfig({
     icon: "https://yidyxlwrongecctifiis.supabase.co/storage/v1/object/public/assets/logo.png",
   },
   navigationBar: {
-    withBackButton: true,
+    withBackButton: false,
     withHomeButton: true,
   },
   web: {

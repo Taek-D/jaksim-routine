@@ -10,6 +10,12 @@
           }
         ]
       }
+    ],
+    "PreCommit": [
+      {
+        "type": "command",
+        "command": "pnpm typecheck && pnpm lint"
+      }
     ]
   },
   "permissions": {
@@ -22,7 +28,16 @@
       "Bash(pnpm qa:iap:static)",
       "Bash(pnpm install)",
       "Bash(pnpm add *)",
-      "Bash(pnpm remove *)"
+      "Bash(pnpm remove *)",
+      "Bash(pnpm granite:*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(git stash*)"
     ]
   }
 }
