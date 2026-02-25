@@ -9,7 +9,7 @@ import { Icon } from "../components/Icon";
 
 export default function SettingsPage() {
   const navigate = useNavigate();
-  const { state, restorePurchases, resetAllData } = useAppState();
+  const { state, restorePurchases } = useAppState();
   const hasTrackedSettingsViewRef = useRef(false);
 
   const premiumUntil = state.entitlement.premiumUntil;
@@ -136,31 +136,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Data Management */}
-        <section>
-          <h2 className="text-[13px] font-semibold text-gray-500 mb-2 px-1">데이터 관리</h2>
-          <div className="bg-white rounded-[14px] border border-gray-200 overflow-hidden shadow-sm">
-            <button
-              className="w-full flex items-center gap-3 p-4 hover:bg-red-50 transition-colors text-red-600"
-              type="button"
-              onClick={async () => {
-                const ok = window.confirm("정말 초기화할까요? 모든 루틴과 체크인 기록이 삭제돼요.");
-                if (!ok) {
-                  return;
-                }
-                trackEvent("data_reset");
-                await resetAllData();
-                navigate("/onboarding", { replace: true });
-              }}
-            >
-              <Icon name="delete" size={22} />
-              <span className="text-[15px] font-medium">데이터 초기화</span>
-            </button>
-          </div>
-          <p className="mt-2 text-[13px] text-gray-400 px-1">
-            데이터 초기화 시 모든 루틴 기록과 설정이 영구적으로 삭제되며, 복구할 수 없습니다.
-          </p>
-        </section>
       </main>
     </div>
   );
