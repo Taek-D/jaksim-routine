@@ -1,4 +1,4 @@
-const DEFAULT_SUPPORT_EMAIL = "jaksim.routine@gmail.com";
+const DEFAULT_SUPPORT_EMAIL = "atef21422@gmail.com";
 const DEFAULT_TERMS_URL = "https://taek-d.github.io/jaksim-routine/terms.html";
 const DEFAULT_PRIVACY_URL = "https://taek-d.github.io/jaksim-routine/privacy.html";
 
