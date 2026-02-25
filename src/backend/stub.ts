@@ -10,9 +10,12 @@ import type {
 const nowIso = () => new Date().toISOString();
 const BACKEND_STORAGE_KEY = "jaksim-routine.entitlement-backend.stub.v2";
 
+const SKU_MONTHLY = "ait.0000020428.d20afd98.2317931b4d.2010804767";
+const SKU_YEARLY = "ait.0000020428.220b7594.0cccd017bf.2010830904";
+
 const PRODUCT_ITEMS: ProductItem[] = [
-  { sku: "premium_monthly", title: "월 이용권", priceLabel: "월 1,900원" },
-  { sku: "premium_yearly", title: "연 이용권", priceLabel: "연 14,900원" },
+  { sku: SKU_MONTHLY, title: "월 이용권", priceLabel: "월 1,900원" },
+  { sku: SKU_YEARLY, title: "연 이용권", priceLabel: "연 14,900원" },
 ];
 
 interface BackendStoreShape {
@@ -75,7 +78,7 @@ function addDaysFromNowIso(days: number): string {
 }
 
 function getPremiumUntilBySku(sku: string): string {
-  if (sku === "premium_yearly") {
+  if (sku === SKU_YEARLY) {
     return addDaysFromNowIso(365);
   }
   return addDaysFromNowIso(30);

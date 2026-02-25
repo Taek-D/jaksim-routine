@@ -27,8 +27,8 @@ export class SupabaseEntitlementBackend implements EntitlementBackend {
     const { data, error } = await this.client.rpc("jaksim_get_product_items");
     if (error) {
       return [
-        { sku: "premium_monthly", title: "월 이용권", priceLabel: "월 1,900원" },
-        { sku: "premium_yearly", title: "연 이용권", priceLabel: "연 14,900원" },
+        { sku: "ait.0000020428.d20afd98.2317931b4d.2010804767", title: "월 이용권", priceLabel: "월 1,900원" },
+        { sku: "ait.0000020428.220b7594.0cccd017bf.2010830904", title: "연 이용권", priceLabel: "연 14,900원" },
       ];
     }
     return data as ProductItem[];

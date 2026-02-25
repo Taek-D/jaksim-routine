@@ -33,10 +33,11 @@ import { entitlementBackend } from "../backend";
 import { trackEvent } from "../analytics/analytics";
 import {
   completeIapProductGrant,
-  createIapOrder,
+  createIapPurchaseOrder,
   getIapCompletedOrRefundedOrders,
   getIapPendingOrders,
   getLoginUserKeyHash,
+  isIapBridgeAvailable,
 } from "../integrations/tossSdk";
 
 interface CreateRoutineInput {
@@ -93,8 +94,10 @@ function isPremiumEntitlementActive(premiumUntil?: string): boolean {
   return new Date(premiumUntil).getTime() > Date.now();
 }
 
+const SKU_YEARLY = "ait.0000020428.220b7594.0cccd017bf.2010830904";
+
 function getPremiumDaysBySku(sku: string): number {
-  if (sku === "premium_yearly") {
+  if (sku === SKU_YEARLY) {
     return 365;
   }
   return 30;
@@ -638,31 +641,78 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
   const purchasePremium = useCallback(async (sku: string) => {
     const userKeyHash = await ensureUserKeyHash();
-    const runtimeOrder = await createIapOrder(sku);
-    if (runtimeOrder) {
-      await entitlementBackend.registerPendingOrder(userKeyHash, runtimeOrder);
+
+    // ── 1. IAP 브릿지가 있으면 공식 콜백 패턴으로 결제 ──
+    if (isIapBridgeAvailable()) {
+      try {
+        const runtimeOrder = await createIapPurchaseOrder(sku, async (orderId) => {
+          // 결제 성공 콜백: 서버에 주문 등록 + 상품 부여
+          await entitlementBackend.registerPendingOrder(userKeyHash, {
+            orderId,
+            sku,
+            createdAt: new Date().toISOString(),
+          });
+          const grant = await entitlementBackend.processProductGrant(userKeyHash, orderId, sku);
+          return grant.granted;
+        });
+
+        // 결제 취소 또는 실패
+        if (!runtimeOrder) {
+          return {
+            ok: false as const,
+            errorCode: "IAP_ORDER_FAILED" as const,
+          };
+        }
+
+        // 부여 완료 처리
+        await entitlementBackend.completeProductGrant(userKeyHash, runtimeOrder.orderId);
+        void completeIapProductGrant(runtimeOrder.orderId);
+
+        const entitlement = await entitlementBackend.getPurchaseEntitlement(userKeyHash);
+        setState((prev) => ({
+          ...prev,
+          entitlement: {
+            ...prev.entitlement,
+            premiumUntil: entitlement.premiumUntil ?? addDaysIso(getPremiumDaysBySku(sku)),
+            lastOrderId: entitlement.lastOrderId ?? runtimeOrder.orderId,
+            lastSku: entitlement.lastSku ?? sku,
+            refundNoticeShown: true,
+            lastRefundedOrderId: undefined,
+            lastRefundedAt: undefined,
+            lastKnownUserKeyHash: userKeyHash,
+          },
+        }));
+
+        return { ok: true as const, orderId: runtimeOrder.orderId, sku: runtimeOrder.sku };
+      } catch {
+        return {
+          ok: false as const,
+          errorCode: "IAP_ORDER_FAILED" as const,
+        };
+      }
     }
-    let order =
-      runtimeOrder ?? (await entitlementBackend.createOneTimePurchaseOrder(userKeyHash, sku));
-    let grant = await entitlementBackend.processProductGrant(
+
+    // ── 2. 프로덕션에서는 IAP 브릿지 없이 결제 불가 ──
+    if (import.meta.env.PROD) {
+      return {
+        ok: false as const,
+        errorCode: "IAP_UNAVAILABLE" as const,
+      };
+    }
+
+    // ── 3. 개발 모드 전용: 백엔드 직접 결제 (테스트용) ──
+    const order = await entitlementBackend.createOneTimePurchaseOrder(userKeyHash, sku);
+    const grant = await entitlementBackend.processProductGrant(
       userKeyHash,
       order.orderId,
       order.sku
     );
     if (!grant.granted) {
-      order = await entitlementBackend.createOneTimePurchaseOrder(userKeyHash, sku);
-      grant = await entitlementBackend.processProductGrant(
-        userKeyHash,
-        order.orderId,
-        order.sku
-      );
-    }
-    if (!grant.granted) {
       return {
         ok: false as const,
         orderId: order.orderId,
         sku: order.sku,
-        errorCode: "GRANT_REJECTED",
+        errorCode: "GRANT_REJECTED" as const,
       };
     }
     const complete = await entitlementBackend.completeProductGrant(userKeyHash, order.orderId);
@@ -671,14 +721,11 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         ok: false as const,
         orderId: order.orderId,
         sku: order.sku,
-        errorCode: "COMPLETE_FAILED",
+        errorCode: "COMPLETE_FAILED" as const,
       };
     }
-    if (runtimeOrder) {
-      void completeIapProductGrant(runtimeOrder.orderId);
-    }
-    const entitlement = await entitlementBackend.getPurchaseEntitlement(userKeyHash);
 
+    const entitlement = await entitlementBackend.getPurchaseEntitlement(userKeyHash);
     setState((prev) => ({
       ...prev,
       entitlement: {

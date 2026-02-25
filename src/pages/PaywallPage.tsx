@@ -90,11 +90,17 @@ export default function PaywallPage() {
       const result = await purchasePremium(sku);
       if (!result.ok) {
         trackEvent("iap_grant_fail", {
-          orderId: result.orderId,
-          sku: result.sku ?? sku,
+          orderId: "orderId" in result ? result.orderId : undefined,
+          sku: ("sku" in result ? result.sku : undefined) ?? sku,
           errorCode: result.errorCode ?? "UNKNOWN",
         });
-        setNotice("결제를 완료하지 못했어요. 잠시 후 다시 시도해 주세요.");
+        const msg =
+          result.errorCode === "IAP_UNAVAILABLE"
+            ? "토스 앱에서만 결제할 수 있어요."
+            : result.errorCode === "IAP_ORDER_FAILED"
+              ? "결제가 취소되었거나 결제 시스템에 연결할 수 없어요."
+              : "결제를 완료하지 못했어요. 잠시 후 다시 시도해 주세요.";
+        setNotice(msg);
         setBusySku(null);
         return;
       }
