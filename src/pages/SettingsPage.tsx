@@ -92,9 +92,9 @@ export default function SettingsPage() {
           <h2 className="text-[13px] font-semibold text-gray-500 mb-2 px-1">고객 지원</h2>
           <div className="bg-white rounded-[14px] border border-gray-200 overflow-hidden shadow-sm">
             {[
-              { icon: "mail", label: "이메일 문의", onClick: () => { void openExternalUrl(buildSupportMailto("[작심루틴] 문의"), { fallback: "none" }); } },
-              { icon: "description", label: "이용약관", onClick: () => { void openExternalUrl(appConfig.termsUrl, { fallback: "none" }); } },
-              { icon: "lock", label: "개인정보 처리방침", onClick: () => { void openExternalUrl(appConfig.privacyUrl, { fallback: "none" }); } },
+              { icon: "mail", label: "이메일 문의", onClick: () => { void openExternalUrl(buildSupportMailto("[작심루틴] 문의"), { fallback: "location" }); } },
+              { icon: "description", label: "이용약관", onClick: () => { navigate(`/webview?title=${encodeURIComponent("이용약관")}&url=${encodeURIComponent(appConfig.termsUrl)}`); } },
+              { icon: "lock", label: "개인정보 처리방침", onClick: () => { navigate(`/webview?title=${encodeURIComponent("개인정보 처리방침")}&url=${encodeURIComponent(appConfig.privacyUrl)}`); } },
             ].map((item, i) => (
               <button
                 key={i}

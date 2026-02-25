@@ -9,6 +9,7 @@ import RoutineEditPage from "../pages/RoutineEditPage";
 import PaywallPage from "../pages/PaywallPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import EntitlementHistoryPage from "../pages/EntitlementHistoryPage";
+import WebViewPage from "../pages/WebViewPage";
 import { useAppState } from "../state/AppStateProvider";
 import { resolveDeepLinkTargetFromLocation } from "./deeplink";
 
@@ -60,6 +61,7 @@ export default function AppRoutes() {
         <Route path="/jaksim-routine/routine/new" element={<Navigate replace to="/routine/new" />} />
         <Route path="/routine/:routineId" element={<RoutineDetailPage />} />
         <Route path="/routine/:routineId/edit" element={<RoutineEditPage />} />
+        <Route path="/webview" element={<WebViewPage />} />
         <Route path="/paywall" element={<PaywallPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

@@ -8,7 +8,7 @@ import type {
 } from "./contracts";
 
 const nowIso = () => new Date().toISOString();
-const BACKEND_STORAGE_KEY = "jaksim-routine.entitlement-backend.stub.v1";
+const BACKEND_STORAGE_KEY = "jaksim-routine.entitlement-backend.stub.v2";
 
 const PRODUCT_ITEMS: ProductItem[] = [
   { sku: "premium_monthly", title: "월 이용권", priceLabel: "월 1,900원" },

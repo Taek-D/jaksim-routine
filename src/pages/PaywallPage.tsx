@@ -123,7 +123,7 @@ export default function PaywallPage() {
         <h1 className="text-[17px] font-bold text-transparent select-none">Premium</h1>
       </header>
 
-      <main className="flex-1 px-5 pt-4 pb-8 overflow-y-auto">
+      <main className="flex-1 px-5 pt-4 pb-40 overflow-y-auto">
         {/* Hero */}
         <div className="flex flex-col items-center text-center mb-10 mt-4">
           <div className="w-16 h-16 bg-blue-50 rounded-[22px] flex items-center justify-center mb-5 shadow-sm">
@@ -164,8 +164,8 @@ export default function PaywallPage() {
             },
             {
               icon: "folder_special",
-              title: "프리미엄 템플릿",
-              desc: "성공한 사람들의 루틴 팩을 바로 적용해보세요",
+              title: "프리미엄 템플릿 (출시 예정)",
+              desc: "성공한 사람들의 루틴 팩을 바로 적용할 수 있어요",
             },
           ].map((feature, i) => (
             <div key={i} className="flex items-center gap-4">
@@ -181,7 +181,7 @@ export default function PaywallPage() {
         </div>
 
         {/* Product Plans */}
-        <div className="space-y-3 mb-8">
+        <div className="flex flex-col gap-5 mb-8">
           {products.map((product, i) => {
             const isSelected = selectedSku === product.sku;
             const isLast = i === products.length - 1;
@@ -189,7 +189,7 @@ export default function PaywallPage() {
               <label
                 key={product.sku}
                 className={cn(
-                  "block border rounded-2xl p-5 cursor-pointer relative transition-all",
+                  "block border rounded-2xl p-6 cursor-pointer relative transition-all",
                   isSelected
                     ? "border-[#111827] bg-gray-50 ring-1 ring-[#111827]"
                     : "border-gray-200 hover:bg-gray-50"

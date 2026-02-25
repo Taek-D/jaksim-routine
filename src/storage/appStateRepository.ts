@@ -4,7 +4,7 @@ import {
 } from "../domain/models";
 import { browserStorageDriver, type StorageDriver } from "./storageDriver";
 
-const APP_STATE_STORAGE_KEY = "jaksim-routine.app-state.v1";
+const APP_STATE_STORAGE_KEY = "jaksim-routine.app-state.v2";
 
 export function createInitialAppState(): AppState {
   return {

@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "qa:iap:static": "node scripts/qa-iap-check.mjs",
     "granite:dev": "node node_modules/@apps-in-toss/web-framework/bin.js dev",
-    "granite:build": "node node_modules/@apps-in-toss/web-framework/bin.js build"
+    "granite:build": "node node_modules/@apps-in-toss/web-framework/bin.js build",
+    "deploy": "vite build && node node_modules/@apps-in-toss/web-framework/bin.js build"
   },
   "dependencies": {
     "@apps-in-toss/web-framework": "^1.12.0",

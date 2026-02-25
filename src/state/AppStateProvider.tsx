@@ -226,10 +226,10 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       ...prev,
       entitlement: {
         ...prev.entitlement,
-        premiumUntil: entitlement.premiumUntil ?? prev.entitlement.premiumUntil,
+        premiumUntil: entitlement.premiumUntil,
         trialUsedLocal: prev.entitlement.trialUsedLocal || gate.trialUsed,
-        lastOrderId: entitlement.lastOrderId ?? prev.entitlement.lastOrderId,
-        lastSku: entitlement.lastSku ?? prev.entitlement.lastSku,
+        lastOrderId: entitlement.lastOrderId,
+        lastSku: entitlement.lastSku,
         lastKnownUserKeyHash: userKeyHash,
       },
     }));
