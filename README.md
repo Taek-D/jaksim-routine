@@ -3,7 +3,16 @@
 > "작심삼일도 괜찮아요 — 다시 시작하면 되니까."
 
 토스 미니앱(Apps in Toss) 기반의 일상 루틴 트래커.
-원탭 체크인, 연속 기록(스트릭), 배지, 주간 리포트, IAP 프리미엄 기능을 제공합니다.
+원탭 체크인, 연속 기록(스트릭), 배지, 주간 리포트, 스트릭 보호권, IAP 프리미엄 기능을 제공합니다.
+
+### 주요 기능
+
+- **원탭 체크인** — 완료/건너뜀 + 한줄 메모
+- **스트릭 & 배지** — 연속 달성 기록과 5종 배지
+- **주간 리포트** — 완료율, 히트맵, 월간 트렌드, 규칙 기반 코멘트
+- **다시 시작하기** — 끊겨도 언제든 재도전
+- **스트릭 보호권** — 프리미엄 사용자 월 2회 스트릭 보호
+- **인앱 결제(IAP)** — 월/연 이용권 + 7일 무료 체험(1회)
 
 ---
 
@@ -16,7 +25,8 @@
 | State | React Context (`AppStateProvider`) |
 | Storage | localStorage (`storageDriver`) |
 | Backend | Supabase (RPC) / InMemory stub |
-| Platform | Toss Mini App SDK (window bridge) |
+| Platform | Apps-in-Toss Granite SDK |
+| IAP | @apps-in-toss/web-framework (공식 SDK) |
 | Styling | Tailwind CSS v4 (`@tailwindcss/vite`) |
 | Icons | Material Symbols Outlined (Google Fonts CDN) |
 | Animation | Motion (Framer Motion) + canvas-confetti |
@@ -34,7 +44,7 @@ src/
   components/    공유 UI 컴포넌트 (AppShell, BadgeOverlay, Icon, NoteModal, WarningToast)
   config/        앱 설정 (지원 이메일, 약관 URL)
   domain/        도메인 모델, 진행도 계산, 배지 로직, 템플릿
-  integrations/  토스 SDK 브릿지 (IAP, Identity, MiniApp)
+  integrations/  토스 SDK 브릿지 (IAP: 공식 SDK, Identity/MiniApp: window bridge)
   lib/           유틸 함수 (cn)
   pages/         라우트 페이지 컴포넌트
   state/         AppStateProvider (Context 기반 전역 상태) + selectors
@@ -102,7 +112,7 @@ src/
 - **헤더**: 뒤로가기 화살표 + "새 루틴 만들기" 중앙 제목
 - **제목 입력** (`rounded-xl`, focus ring): 최대 20자, 우측 글자수 카운터 (N/20)
 - **추천 루틴**: pill 버튼 (`rounded-2xl`), 선택 시 검정 배경 + 흰 텍스트
-  - 운동 30분, 공부 45분, 절약 기록, 정리 15분, 독서 10페이지 (모두 월~금)
+  - 운동 30분, 공부 45분, 정리 15분, 독서 10페이지 (모두 월~금)
   - 선택 시 제목·요일 자동 입력
 - **요일 선택**: 원형 버튼 (`w-11 h-11 rounded-full`), 선택 시 shadow + `active:scale-90` 터치 피드백
 - **"주 N일 실천해요"** 카운트 텍스트
@@ -151,6 +161,9 @@ src/
   - <50%: "다시 시작해도 괜찮아요. 다음 주가 있어요 🔄"
 - **최고 요일 표시** (가장 많이 완료한 요일)
 - **루틴별 카드**: 아이콘 원형 + 이름 + 목표 + 애니메이션 프로그레스 바 (`motion.div`) + 스트릭 pill
+- **히트맵 (프리미엄)**: 30일 체크인 시각화 그리드
+- **월간 트렌드 (프리미엄)**: 4주 완료율 추이 차트
+- **메모 타임라인**: 최근 메모 히스토리
 - **배지 그리드**: 3열, 원형 아이콘 + 라벨 (미획득 배지 `opacity-50 grayscale`)
 
 ---
@@ -214,6 +227,8 @@ src/
 | `Icon` | Material Symbols Outlined 아이콘 래퍼 | 전체 |
 | `NoteModal` | 바텀시트 메모 입력 다이얼로그 (`rounded-2xl`) | 홈, 루틴 상세 |
 | `WarningToast` | 하단 경고 토스트 | 홈 (건너뜀 시) |
+| `StreakShieldPrompt` | 스트릭 보호권 프롬프트 (프리미엄/무료 분기) | 홈 (스트릭 끊김 감지 시) |
+| `HeatmapGrid` | 30일 체크인 히트맵 시각화 | 리포트 (프리미엄) |
 
 ### AppShell 구조
 
@@ -398,6 +413,8 @@ bg-white rounded-[20px] p-5 shadow-sm
 | 구분 | 무료 | 프리미엄 |
 |------|------|---------|
 | 활성 루틴 | 최대 3개 | 제한 해제 |
+| 스트릭 보호권 | — | 월 2회 |
+| 히트맵 / 트렌드 | — | 사용 가능 |
 | 무료 체험 | 7일 (1회) | — |
 | 월 이용권 | — | 1,900원 (30일) |
 | 연 이용권 | — | 14,900원 (365일) |
@@ -425,4 +442,22 @@ pnpm build          # 프로덕션 빌드
 pnpm typecheck      # 타입 검사
 pnpm lint           # ESLint
 pnpm qa:iap:static  # IAP 정적 분석
+pnpm deploy         # 앱인토스 번들 빌드
 ```
+
+---
+
+## 딥링크
+
+| 기능 | 스킴 |
+|------|------|
+| 오늘 루틴 체크하기 | `intoss://jaksim-routine/home` |
+| 주간 리포트 보기 | `intoss://jaksim-routine/report` |
+| 루틴 만들기 | `intoss://jaksim-routine/routine/new` |
+
+## 인앱 상품
+
+| 상품명 | 유형 | SKU | 가격 |
+|--------|------|-----|------|
+| 월 이용권 | 비소모품 | `ait.0000020428.d20afd98.2317931b4d.2010804767` | 1,900원 |
+| 연 이용권 | 비소모품 | `ait.0000020428.220b7594.0cccd017bf.2010830904` | 14,900원 |
