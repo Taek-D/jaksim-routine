@@ -1,41 +1,45 @@
-interface MaybeMiniAppBridge {
-  openURL?: (url: string) => void | Promise<void>;
-  close?: () => void | Promise<void>;
-}
+import { IAP } from "@apps-in-toss/web-framework";
 
-interface MaybeIapBridge {
-  getProductItemList?: () => Promise<unknown>;
-  createOneTimePurchaseOrder?: (payload?: unknown) => unknown;
-  getPendingOrders?: () => Promise<unknown>;
-  completeProductGrant?: (payload?: unknown) => Promise<unknown>;
-  getCompletedOrRefundedOrders?: (payload?: unknown) => Promise<unknown>;
-}
+// ─── 공개 인터페이스 (기존과 동일) ───
 
-interface MaybeIdentityBridge {
-  getUserKeyHash?: () => Promise<unknown>;
-  getUserInfo?: () => Promise<unknown>;
-  getUser?: () => Promise<unknown>;
-}
-
-type OpenUrlFallback = "none" | "location";
-
-export interface IapProductItem {
+export type IapProductItem = {
   sku: string;
   title: string;
   priceLabel: string;
-}
+};
 
-export interface IapPendingOrder {
+export type IapPendingOrder = {
   orderId: string;
   sku: string;
   createdAt: string;
-}
+};
 
-export interface IapCompletedOrRefundedOrder {
+export type IapCompletedOrRefundedOrder = {
   orderId: string;
   sku: string;
   status: "COMPLETED" | "REFUNDED";
   updatedAt: string;
+};
+
+type OpenUrlFallback = "none" | "location";
+
+// ─── 환경 감지 ───
+
+function isTossWebView(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    typeof (window as unknown as Record<string, unknown>).ReactNativeWebView === "object" &&
+    (window as unknown as Record<string, unknown>).ReactNativeWebView != null
+  );
+}
+
+// ─── Mini App: openURL / close / share (기존 window 브릿지 유지) ───
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+  return value as Record<string, unknown>;
 }
 
 function getWindowAny(): Record<string, unknown> | null {
@@ -45,29 +49,9 @@ function getWindowAny(): Record<string, unknown> | null {
   return window as unknown as Record<string, unknown>;
 }
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  if (!value || typeof value !== "object") {
-    return null;
-  }
-  return value as Record<string, unknown>;
-}
-
-/** response가 배열이면 그대로, { products: [...] } / { orders: [...] } 형태면 내부 배열 추출 */
-function unwrapArray(response: unknown): unknown[] {
-  if (Array.isArray(response)) {
-    return response;
-  }
-  const record = asRecord(response);
-  if (!record) {
-    return [];
-  }
-  // 공식 SDK 응답: { products: [...] }, { orders: [...] }
-  for (const key of ["products", "orders", "items", "data"]) {
-    if (Array.isArray(record[key])) {
-      return record[key] as unknown[];
-    }
-  }
-  return [];
+interface MaybeMiniAppBridge {
+  openURL?: (url: string) => void | Promise<void>;
+  close?: () => void | Promise<void>;
 }
 
 function pickMiniAppBridge(): MaybeMiniAppBridge | null {
@@ -94,160 +78,6 @@ function pickMiniAppBridge(): MaybeMiniAppBridge | null {
   }
 
   return null;
-}
-
-function pickIapBridge(): MaybeIapBridge | null {
-  const target = getWindowAny();
-  if (!target) {
-    return null;
-  }
-
-  const candidateRoots: Array<Record<string, unknown>> = [target];
-  const topCandidates: unknown[] = [target.TossMiniApp, target.tossMiniApp, target.appsInToss];
-  for (const candidate of topCandidates) {
-    const parsed = asRecord(candidate);
-    if (parsed) {
-      candidateRoots.push(parsed);
-    }
-  }
-
-  for (const root of candidateRoots) {
-    const bridgeCandidates: unknown[] = [root.IAP, root.iap, root.TossIAP, root];
-    for (const candidate of bridgeCandidates) {
-      const bridge = asRecord(candidate) as MaybeIapBridge | null;
-      if (!bridge) {
-        continue;
-      }
-      if (
-        typeof bridge.getProductItemList === "function" ||
-        typeof bridge.createOneTimePurchaseOrder === "function" ||
-        typeof bridge.getPendingOrders === "function"
-      ) {
-        return bridge;
-      }
-    }
-  }
-
-  return null;
-}
-
-function pickIdentityBridge(): MaybeIdentityBridge | null {
-  const target = getWindowAny();
-  if (!target) {
-    return null;
-  }
-
-  const candidates: unknown[] = [target.TossMiniApp, target.tossMiniApp, target.appsInToss, target];
-  for (const candidate of candidates) {
-    const bridge = asRecord(candidate) as MaybeIdentityBridge | null;
-    if (!bridge) {
-      continue;
-    }
-    if (
-      typeof bridge.getUserKeyHash === "function" ||
-      typeof bridge.getUserInfo === "function" ||
-      typeof bridge.getUser === "function"
-    ) {
-      return bridge;
-    }
-  }
-
-  return null;
-}
-
-function valueToString(value: unknown): string | null {
-  if (typeof value !== "string") {
-    return null;
-  }
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
-function normalizePriceLabel(value: unknown): string {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return `${value}`;
-  }
-  if (typeof value === "string") {
-    return value;
-  }
-  return "";
-}
-
-function normalizeProductItem(value: unknown): IapProductItem | null {
-  const item = asRecord(value);
-  if (!item) {
-    return null;
-  }
-
-  const sku = valueToString(item.sku) ?? valueToString(item.productId) ?? valueToString(item.id);
-  if (!sku) {
-    return null;
-  }
-
-  const title =
-    valueToString(item.title) ??
-    valueToString(item.displayName) ??
-    valueToString(item.name) ??
-    valueToString(item.productName) ??
-    sku;
-
-  const priceLabel =
-    valueToString(item.priceLabel) ??
-    valueToString(item.displayAmount) ??
-    valueToString(item.displayPrice) ??
-    normalizePriceLabel(item.price) ??
-    "";
-
-  return {
-    sku,
-    title,
-    priceLabel,
-  };
-}
-
-function normalizePendingOrder(value: unknown): IapPendingOrder | null {
-  const item = asRecord(value);
-  if (!item) {
-    return null;
-  }
-
-  const orderId = valueToString(item.orderId) ?? valueToString(item.orderID) ?? valueToString(item.id);
-  const sku = valueToString(item.sku) ?? valueToString(item.productId);
-  if (!orderId || !sku) {
-    return null;
-  }
-
-  return {
-    orderId,
-    sku,
-    createdAt: valueToString(item.createdAt) ?? new Date().toISOString(),
-  };
-}
-
-function normalizeCompletedOrder(value: unknown): IapCompletedOrRefundedOrder | null {
-  const item = asRecord(value);
-  if (!item) {
-    return null;
-  }
-
-  const orderId = valueToString(item.orderId) ?? valueToString(item.orderID) ?? valueToString(item.id);
-  const sku = valueToString(item.sku) ?? valueToString(item.productId);
-  const statusRaw = valueToString(item.status);
-  if (!orderId || !sku || !statusRaw) {
-    return null;
-  }
-
-  const status = statusRaw.toUpperCase();
-  if (status !== "COMPLETED" && status !== "REFUNDED") {
-    return null;
-  }
-
-  return {
-    orderId,
-    sku,
-    status,
-    updatedAt: valueToString(item.updatedAt) ?? valueToString(item.date) ?? new Date().toISOString(),
-  };
 }
 
 export async function openExternalUrl(
@@ -301,43 +131,35 @@ export async function shareMiniAppLink(params: {
   return "unavailable";
 }
 
-// ─── IAP: 상품 목록 조회 ───
+// ─── IAP: 상품 목록 조회 (공식 SDK) ───
 
 export async function getIapProductItems(): Promise<IapProductItem[]> {
-  const bridge = pickIapBridge();
-  if (!bridge || typeof bridge.getProductItemList !== "function") {
+  if (!isTossWebView()) {
     return [];
   }
 
   try {
-    const response = await bridge.getProductItemList();
-    // 공식 응답: { products: [...] } 또는 직접 배열
-    const values = unwrapArray(response);
-    return values.map(normalizeProductItem).filter((item): item is IapProductItem => item != null);
+    const response = await IAP.getProductItemList();
+    if (!response || !Array.isArray(response.products)) {
+      return [];
+    }
+    return response.products.map((product) => ({
+      sku: product.sku,
+      title: product.displayName,
+      priceLabel: product.displayAmount,
+    }));
   } catch {
     return [];
   }
 }
 
-// ─── IAP: 결제 주문 생성 (콜백 패턴 + Promise 패턴 모두 지원) ───
+// ─── IAP: 결제 주문 생성 (공식 SDK 콜백 패턴) ───
 
-/**
- * 공식 SDK createOneTimePurchaseOrder는 콜백 기반:
- *   bridge.createOneTimePurchaseOrder({
- *     options: { sku, processProductGrant: ({orderId}) => boolean },
- *     onEvent: (event) => void,
- *     onError: (error) => void,
- *   }) → cleanup function
- *
- * grantCallback: 결제 성공 시 서버에 상품 부여를 수행하는 콜백.
- *   orderId를 받아 서버 grant 후 true/false 반환.
- */
 export function createIapPurchaseOrder(
   sku: string,
   grantCallback: (orderId: string) => Promise<boolean>
 ): Promise<IapPendingOrder | null> {
-  const bridge = pickIapBridge();
-  if (!bridge || typeof bridge.createOneTimePurchaseOrder !== "function") {
+  if (!isTossWebView()) {
     return Promise.resolve(null);
   }
 
@@ -364,21 +186,18 @@ export function createIapPurchaseOrder(
     };
 
     try {
-      // 공식 콜백 패턴 시도
-      const fn = bridge.createOneTimePurchaseOrder!;
-      const maybeResult = fn({
+      const cleanup = IAP.createOneTimePurchaseOrder({
         options: {
           sku,
-          processProductGrant: async (params: unknown) => {
+          processProductGrant: async ({ orderId }) => {
             try {
-              const p = asRecord(params);
-              const orderId = p
-                ? (valueToString(p.orderId) ?? valueToString(p.orderID) ?? "")
-                : "";
-              if (!orderId) return false;
               const granted = await grantCallback(orderId);
               if (granted) {
-                settleAndClear({ orderId, sku, createdAt: new Date().toISOString() });
+                settleAndClear({
+                  orderId,
+                  sku,
+                  createdAt: new Date().toISOString(),
+                });
               }
               return granted;
             } catch {
@@ -389,146 +208,80 @@ export function createIapPurchaseOrder(
         },
         onEvent: () => {
           // processProductGrant에서 이미 resolve됨
+          cleanupFn?.();
         },
         onError: () => {
+          cleanupFn?.();
           settleAndClear(null);
         },
       });
 
-      // SDK가 cleanup 함수를 반환하는 경우 저장
-      if (typeof maybeResult === "function") {
-        cleanupFn = maybeResult as () => void;
-      }
-      // 브릿지가 Promise를 반환하는 경우 (구형 브릿지 호환)
-      else if (maybeResult != null && typeof maybeResult === "object" && "then" in maybeResult) {
-        (maybeResult as Promise<unknown>)
-          .then((response) => {
-            if (settled) return;
-            if (typeof response === "string") {
-              settleAndClear({ orderId: response, sku, createdAt: new Date().toISOString() });
-              return;
-            }
-            const parsed = asRecord(response);
-            const orderId = parsed
-              ? (valueToString(parsed.orderId) ?? valueToString(parsed.orderID) ?? valueToString(parsed.id))
-              : null;
-            if (orderId) {
-              settleAndClear({
-                orderId,
-                sku: valueToString(parsed?.sku) ?? valueToString(parsed?.productId) ?? sku,
-                createdAt: new Date().toISOString(),
-              });
-            }
-          })
-          .catch(() => {
-            settleAndClear(null);
-          });
-      }
+      cleanupFn = cleanup;
     } catch {
       settleAndClear(null);
     }
   });
 }
 
-/** 브릿지 없는 환경에서의 단순 Promise 기반 주문 (개발 모드 전용, 폴백) */
-export async function createIapOrderLegacy(sku: string): Promise<IapPendingOrder | null> {
-  const bridge = pickIapBridge();
-  if (!bridge || typeof bridge.createOneTimePurchaseOrder !== "function") {
-    return null;
-  }
-
-  const attempts: unknown[] = [
-    { sku },
-    { productId: sku },
-    sku,
-  ];
-
-  for (const payload of attempts) {
-    try {
-      const response = await (bridge.createOneTimePurchaseOrder(payload) as Promise<unknown>);
-      if (typeof response === "string") {
-        return { orderId: response, sku, createdAt: new Date().toISOString() };
-      }
-
-      const parsed = asRecord(response);
-      if (!parsed) continue;
-
-      const orderId =
-        valueToString(parsed.orderId) ?? valueToString(parsed.orderID) ?? valueToString(parsed.id);
-      if (!orderId) continue;
-
-      return {
-        orderId,
-        sku: valueToString(parsed.sku) ?? valueToString(parsed.productId) ?? sku,
-        createdAt: valueToString(parsed.createdAt) ?? new Date().toISOString(),
-      };
-    } catch {
-      continue;
-    }
-  }
-
-  return null;
-}
-
-// ─── IAP: 대기 주문 조회 ───
+// ─── IAP: 대기 주문 조회 (공식 SDK) ───
 
 export async function getIapPendingOrders(): Promise<IapPendingOrder[]> {
-  const bridge = pickIapBridge();
-  if (!bridge || typeof bridge.getPendingOrders !== "function") {
+  if (!isTossWebView()) {
     return [];
   }
 
   try {
-    const response = await bridge.getPendingOrders();
-    // 공식 응답: { orders: [...] } 또는 직접 배열
-    const values = unwrapArray(response);
-    return values.map(normalizePendingOrder).filter((item): item is IapPendingOrder => item != null);
+    const response = await IAP.getPendingOrders();
+    if (!response || !Array.isArray(response.orders)) {
+      return [];
+    }
+    return response.orders
+      .filter((order) => order.orderId && order.sku)
+      .map((order) => ({
+        orderId: order.orderId,
+        sku: order.sku,
+        createdAt: order.paymentCompletedDate ?? new Date().toISOString(),
+      }));
   } catch {
     return [];
   }
 }
 
-// ─── IAP: 상품 부여 완료 ───
+// ─── IAP: 상품 부여 완료 (공식 SDK) ───
 
 export async function completeIapProductGrant(orderId: string): Promise<boolean> {
-  const bridge = pickIapBridge();
-  if (!bridge || typeof bridge.completeProductGrant !== "function") {
+  if (!isTossWebView()) {
     return false;
   }
 
-  // 공식: { params: { orderId } }, 기타: { orderId }, orderId
-  const attempts: unknown[] = [
-    { params: { orderId } },
-    { orderId },
-    orderId,
-  ];
-  for (const payload of attempts) {
-    try {
-      await bridge.completeProductGrant(payload);
-      return true;
-    } catch {
-      continue;
-    }
+  try {
+    const result = await IAP.completeProductGrant({ params: { orderId } });
+    return result === true;
+  } catch {
+    return false;
   }
-
-  return false;
 }
 
-// ─── IAP: 완료/환불 주문 조회 ───
+// ─── IAP: 완료/환불 주문 조회 (공식 SDK) ───
 
 export async function getIapCompletedOrRefundedOrders(): Promise<IapCompletedOrRefundedOrder[]> {
-  const bridge = pickIapBridge();
-  if (!bridge || typeof bridge.getCompletedOrRefundedOrders !== "function") {
+  if (!isTossWebView()) {
     return [];
   }
 
   try {
-    const response = await bridge.getCompletedOrRefundedOrders();
-    // 공식 응답: { orders: [...], hasNext, nextKey } 또는 직접 배열
-    const values = unwrapArray(response);
-    return values
-      .map(normalizeCompletedOrder)
-      .filter((item): item is IapCompletedOrRefundedOrder => item != null);
+    const response = await IAP.getCompletedOrRefundedOrders();
+    if (!response || !Array.isArray(response.orders)) {
+      return [];
+    }
+    return response.orders
+      .filter((order) => order.orderId && order.sku && (order.status === "COMPLETED" || order.status === "REFUNDED"))
+      .map((order) => ({
+        orderId: order.orderId,
+        sku: order.sku,
+        status: order.status,
+        updatedAt: order.date ?? new Date().toISOString(),
+      }));
   } catch {
     return [];
   }
@@ -537,10 +290,48 @@ export async function getIapCompletedOrRefundedOrders(): Promise<IapCompletedOrR
 // ─── IAP: 브릿지 감지 ───
 
 export function isIapBridgeAvailable(): boolean {
-  return pickIapBridge() !== null;
+  return isTossWebView();
 }
 
 // ─── Identity ───
+
+interface MaybeIdentityBridge {
+  getUserKeyHash?: () => Promise<unknown>;
+  getUserInfo?: () => Promise<unknown>;
+  getUser?: () => Promise<unknown>;
+}
+
+function valueToString(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function pickIdentityBridge(): MaybeIdentityBridge | null {
+  const target = getWindowAny();
+  if (!target) {
+    return null;
+  }
+
+  const candidates: unknown[] = [target.TossMiniApp, target.tossMiniApp, target.appsInToss, target];
+  for (const candidate of candidates) {
+    const bridge = asRecord(candidate) as MaybeIdentityBridge | null;
+    if (!bridge) {
+      continue;
+    }
+    if (
+      typeof bridge.getUserKeyHash === "function" ||
+      typeof bridge.getUserInfo === "function" ||
+      typeof bridge.getUser === "function"
+    ) {
+      return bridge;
+    }
+  }
+
+  return null;
+}
 
 export async function getLoginUserKeyHash(): Promise<string | null> {
   const bridge = pickIdentityBridge();

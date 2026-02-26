@@ -11,10 +11,11 @@
         ]
       }
     ],
-    "PreCommit": [
+    "PreToolUse": [
       {
+        "matcher": "Bash",
         "type": "command",
-        "command": "pnpm typecheck && pnpm lint"
+        "command": "bash -c 'if echo \"$TOOL_INPUT\" | grep -q \"git commit\"; then pnpm typecheck && pnpm lint; fi'"
       }
     ]
   },
