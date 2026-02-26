@@ -1,8 +1,8 @@
 # 작심루틴 PDCA 진행 현황
 
-> **Last Updated**: 2026-02-25
+> **Last Updated**: 2026-02-26
 > **Project**: jaksim-routine (Toss Mini App)
-> **Overall Progress**: 2/2 features completed (100%)
+> **Overall Progress**: 3 PDCA cycles (2 archived + 1 active completing)
 
 ---
 
@@ -18,46 +18,70 @@ Cycle #1 (2026-02-XX ~ 2026-02-XX)
 
 Cycle #2 (2026-02-24 ~ 2026-02-25)
   └─ Feature: review-rejection-fix
-     Status: ✅ COMPLETED (Active)
+     Status: ✅ COMPLETED (Archive: 2026-02/review-rejection-fix)
      Match Rate: 100% → Report Generated
 
-Current: Ready for next cycle
+Cycle #3 (2026-02-21 ~ 2026-02-26)
+  └─ Feature: iap-sdk-refactor
+     Status: ✅ COMPLETED (Report ready)
+     Match Rate: 95% (≥90% quality gate passed)
+     Iterations: 0 (첫 구현부터 목표 달성)
+
+Current: Ready for archive or next cycle
 ```
 
 ---
 
 ## Active Features
 
-### review-rejection-fix (앱 심사 반려 사유 수정)
+### iap-sdk-refactor (IAP SDK 공식화)
 
 | Phase | Status | Details |
 |-------|--------|---------|
-| **Plan** | ✅ Complete | [review-rejection-fix.plan.md](./01-plan/features/review-rejection-fix.plan.md) |
-| **Design** | ➖ Skipped | Targeted fix (no formal design needed) |
-| **Do** | ✅ Complete | Commits: `bafef29`, `0261cc0` |
-| **Check** | ✅ Complete (100% match) | [review-rejection-fix.analysis.md](./03-analysis/review-rejection-fix.analysis.md) |
-| **Act** | ✅ Complete | [review-rejection-fix.report.md](./04-report/review-rejection-fix.report.md) |
+| **Plan** | ✅ Complete | Targeted SDK refactor (no formal plan doc) |
+| **Design** | ➖ Skipped | Structure unchanged (SDK import only) |
+| **Do** | ✅ Complete | Commits: `b2e4042`, `89c2032` |
+| **Check** | ✅ Complete (95% match) | [iap-sdk-refactor.analysis.md](./03-analysis/iap-sdk-refactor.analysis.md) |
+| **Act** | ✅ Complete | [iap-sdk-refactor.report.md](./04-report/iap-sdk-refactor.report.md) |
 
 **Timeline:**
-- Plan Created: 2026-02-24
-- Implementation: 2026-02-24
-- Gap Analysis: 2026-02-25
-- Report Generated: 2026-02-25
+- Planning: 2026-02-21
+- Implementation: 2026-02-21 ~ 2026-02-25
+- Gap Analysis: 2026-02-26
+- Report Generated: 2026-02-26
 
 **Key Metrics:**
-- Design Match Rate: 100%
-- Completion Criteria: 6/6 PASS
+- Design Match Rate: 95%
+- IAP Checklist: 100% (13/13)
+- Consumer API Compatibility: 100% (6/6)
 - Iteration Count: 0
-- Duration: 2 days
+- Duration: 6 days
+- Code Deleted: 208 lines (cleanup)
 
 **Deliverables:**
-- Deduplication of back button in Toss Mini App UI
-- Expanded deeplink support (`/settings`, `/paywall`, `/routine/:id`)
-- Brand logo accessibility verification
+- Official `@apps-in-toss/web-framework` IAP SDK integration
+- 100% backward-compatible public API
+- 208-line code cleanup (removed normalization, legacy APIs)
+- Identified & documented 10 post-PRD features (Streak Shield, Heatmap, etc.)
+- Critical issue flagged: Top NavigationBar validation needed
 
 ---
 
 ## Completed Features (Archive)
+
+### review-rejection-fix (앱 심사 반려 사유 수정)
+
+| Phase | Status | Details |
+|-------|--------|---------|
+| **Plan** | ✅ Complete | Targeted fix (no formal plan doc) |
+| **Design** | ➖ Skipped | N/A |
+| **Do** | ✅ Complete | Commits: `bafef29`, `0261cc0` |
+| **Check** | ✅ Complete (100% match) | [review-rejection-fix.analysis.md](./archive/2026-02/review-rejection-fix/review-rejection-fix.analysis.md) |
+| **Act** | ✅ Complete | [review-rejection-fix.report.md](./archive/2026-02/review-rejection-fix/review-rejection-fix.report.md) |
+
+**Archive Location:** `docs/archive/2026-02/review-rejection-fix/`
+
+**Timeline:** 2026-02-24 ~ 2026-02-25 (2 days, 100% match rate, 0 iterations)
 
 ### mvp-launch (Toss Mini App MVP)
 

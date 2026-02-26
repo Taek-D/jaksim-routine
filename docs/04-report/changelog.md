@@ -5,6 +5,79 @@
 
 ---
 
+## [2026-02-26] - iap-sdk-refactor: 공식 @apps-in-toss/web-framework SDK로 교체
+
+### Summary
+비공식 window bridge 탐색 방식에서 공식 `@apps-in-toss/web-framework` IAP SDK로 전면 교체. **208줄 코드 정리**, **하위 호환성 100% 유지**, **95% 품질 달성** (1회 반복 없이 첫 구현부터 목표 달성).
+
+**PDCA Cycle**: #3 | **Duration**: 6 days | **Match Rate**: 95%
+
+### Added
+- 공식 IAP SDK import: `@apps-in-toss/web-framework`에서 `IAP` 직접 import
+- 환경 감지 개선: `isTossWebView()` 함수 (ReactNativeWebView 기반)
+- 콜백 패턴 구현: `processProductGrant`를 SDK options 내 async 콜백으로 정확히 전달
+- 타임아웃 방어: 5분 타임아웃 + settlement deduplication으로 promise hanging 방지
+
+### Changed
+- `src/integrations/tossSdk.ts`:
+  - `IAP.getProductItemList()` - 공식 SDK 사용
+  - `IAP.createOneTimePurchaseOrder()` - 콜백 패턴으로 정확히 구현
+  - `IAP.getPendingOrders()` - 공식 SDK 사용
+  - `IAP.completeProductGrant()` - 공식 SDK 사용
+  - `IAP.getCompletedOrRefundedOrders()` - 공식 SDK 사용
+
+### Removed
+- `pickIapBridge()` - 비공식 window bridge 탐색 함수 (208줄 삭제)
+- `unwrapArray()` - 배열 정규화 헬퍼
+- `normalizeProductItem()`, `normalizeOrderId()`, `normalizeSku()`, `normalizeStatus()` - 필드명 정규화 함수들
+- `createIapOrderLegacy()` - 레거시 주문 생성 API (all references removed)
+
+### Fixed
+- 환경 감지 불안정성 → `isTossWebView()` 기반 안정적 감지
+- 정규화 함수 복잡성 → 공식 SDK로 정규화 불필요
+- Legacy API 유지보수 부담 → 완전 제거
+
+### Files Modified
+- `src/integrations/tossSdk.ts`
+
+### Commits
+- `b2e4042` - fix: rewrite IAP bridge to official callback pattern and prevent free premium exploit
+- `89c2032` - refactor: replace IAP window bridge with official @apps-in-toss/web-framework SDK
+
+### Quality Metrics
+- **IAP SDK Correctness**: 100% (5/5 methods) ✅
+- **IAP Checklist (PRD Appendix B)**: 100% (13/13 items) ✅
+- **Consumer API Compatibility**: 100% (6/6 exports identical) ✅
+- **Design Match Rate**: 95% ✅
+- **Type Safety**: 100% (no `any`) ✅
+- **Code Quality**: Pass ✅
+- **Iterations**: 0 (첫 구현부터 95% 달성)
+
+### Known Issues
+- **CRITICAL**: Top NavigationBar 미노출 (실기기 테스트 필수)
+- **MEDIUM**: 데이터 초기화 버튼 제거됨 (의도적, 심사 요구 시 복원 필요)
+- **MEDIUM**: `data_reset` analytics 이벤트 미추적
+- **LOW**: 루틴 템플릿 4개 (PRD는 5개, "절약 기록" 누락)
+
+### Bonus Findings
+프로젝트 전체 분석 과정에서 PRD 이후에 구현된 10개 신규 기능 발견:
+- Streak Shield (스트릭 보호권, 월 2회)
+- Heatmap + 월간 트렌드 (프리미엄 전용)
+- 메모 히스토리 타임라인
+- 일괄 루틴 삭제 (선택 모드)
+- 환불 감지 배너
+- 인사말 시스템
+- 인앱 WebView
+- 체크인 후 인라인 메모
+- 이용권 내역 페이지
+- 루틴 색상 시스템
+
+### Documentation
+- [Completion Report](./iap-sdk-refactor.report.md)
+- [Gap Analysis](../03-analysis/iap-sdk-refactor.analysis.md)
+
+---
+
 ## [2026-02-25] - review-rejection-fix: App Store Review 반려 사유 사전 수정
 
 ### Summary
