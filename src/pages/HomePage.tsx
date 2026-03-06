@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppState } from "../state/AppStateProvider";
 import {
@@ -18,8 +18,8 @@ import { trackEvent } from "../analytics/analytics";
 import { Icon } from "../components/Icon";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
-import confetti from "canvas-confetti";
 import RoutineCard from "../components/RoutineCard";
+import StreakToast from "../components/StreakToast";
 
 interface RoutineActionTarget {
   routineId: string;
@@ -52,11 +52,16 @@ export default function HomePage() {
   const [inlineMemoText, setInlineMemoText] = useState("");
   const inlineMemoTimerRef = useRef<number | null>(null);
   const [shieldPromptDismissed, setShieldPromptDismissed] = useState(false);
+  const [streakToast, setStreakToast] = useState<{ routineName: string; streak: number } | null>(null);
+  const [justCompletedIds, setJustCompletedIds] = useState<Set<string>>(new Set());
   const todayRoutines = getTodayTargetRoutines(state);
   const archivedCount = state.routines.filter((routine) => routine.archivedAt).length;
-  const topStreak = state.routines.reduce(
-    (max, routine) => Math.max(max, getRoutineStreak(state, routine.id)),
-    0
+  const topStreak = useMemo(
+    () => state.routines.reduce(
+      (max, routine) => Math.max(max, getRoutineStreak(state, routine.id)),
+      0
+    ),
+    [state]
   );
   const completedCount = todayRoutines.filter(
     (routine) => getTodayRoutineStatus(state, routine.id) === "COMPLETED"
@@ -65,9 +70,16 @@ export default function HomePage() {
   const progress = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
   const greeting = getGreeting(getKstHour(), progress, topStreak, totalCount);
 
+  // Trial countdown
+  const trialDaysLeft = useMemo(() => {
+    if (!isPremiumActive || state.entitlement.lastSku !== "trial" || !state.entitlement.premiumUntil) return null;
+    const days = Math.ceil((new Date(state.entitlement.premiumUntil).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : null;
+  }, [isPremiumActive, state.entitlement.lastSku, state.entitlement.premiumUntil]);
+
   // Streak shield detection
   const shieldsRemaining = getStreakShieldsRemaining();
-  const shieldCandidate = (() => {
+  const shieldCandidate = useMemo(() => {
     if (shieldPromptDismissed) return null;
     if (isPremiumActive && shieldsRemaining <= 0) return null;
     const activeRoutines = state.routines.filter((r) => !r.archivedAt);
@@ -78,7 +90,7 @@ export default function HomePage() {
       }
     }
     return null;
-  })();
+  }, [shieldPromptDismissed, isPremiumActive, shieldsRemaining, state]);
 
   const handleUseShield = () => {
     if (!shieldCandidate) return;
@@ -169,15 +181,17 @@ export default function HomePage() {
   };
 
   const handleComplete = (routineId: string) => {
+    const routine = state.routines.find((r) => r.id === routineId);
+    const currentStreak = getRoutineStreak(state, routineId);
     trackEvent("checkin_complete", {
       routineId,
       withNote: false,
     });
     checkinRoutine(routineId, "COMPLETED");
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
+    setJustCompletedIds((prev) => new Set(prev).add(routineId));
+    setStreakToast({
+      routineName: routine?.title ?? "",
+      streak: currentStreak + 1,
     });
     startInlineMemo(routineId);
   };
@@ -196,17 +210,18 @@ export default function HomePage() {
     if (!noteTarget) {
       return;
     }
+    const currentStreak = getRoutineStreak(state, noteTarget.routineId);
     trackEvent("checkin_complete", {
       routineId: noteTarget.routineId,
       withNote: true,
     });
     checkinRoutine(noteTarget.routineId, "COMPLETED", noteDraft);
-    closeNoteModal();
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
+    setJustCompletedIds((prev) => new Set(prev).add(noteTarget.routineId));
+    setStreakToast({
+      routineName: noteTarget.title,
+      streak: currentStreak + 1,
     });
+    closeNoteModal();
   };
 
   const openSkipWarning = (routineId: string, title: string, prevStreak: number) => {
@@ -258,8 +273,8 @@ export default function HomePage() {
             <p className="text-text-secondary text-[15px]">{greeting}</p>
           </section>
 
-          {/* Banners */}
-          {showRefundRevokedBanner && (
+          {/* Banner — priority-based, show only the top one */}
+          {showRefundRevokedBanner ? (
             <div className="bg-surface rounded-card p-5 shadow-card flex flex-col gap-3">
               <h2 className="text-[16px] font-bold text-text">환불이 확인되어 이용권이 해제됐어요</h2>
               <p className="text-[14px] text-text-secondary">프리미엄 기능을 다시 사용하려면 이용권을 다시 구매해 주세요.</p>
@@ -280,9 +295,7 @@ export default function HomePage() {
                 </button>
               </div>
             </div>
-          )}
-
-          {showTrialExpiredBanner && (
+          ) : showTrialExpiredBanner ? (
             <div className="bg-surface rounded-card p-5 shadow-card flex flex-col gap-3">
               <h2 className="text-[16px] font-bold text-text">무료 체험이 만료됐어요</h2>
               <p className="text-[14px] text-text-secondary">계속 사용하려면 이용권을 구매해 주세요.</p>
@@ -303,9 +316,24 @@ export default function HomePage() {
                 </button>
               </div>
             </div>
-          )}
-
-          {!isPremiumActive && archivedCount > 0 && (
+          ) : trialDaysLeft != null ? (
+            <div className="bg-surface rounded-card p-5 shadow-card flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-premium-light flex items-center justify-center shrink-0">
+                <Icon name="timer" size={20} className="text-premium" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-[15px] font-bold text-text">무료 체험 종료까지 {trialDaysLeft}일 남았어요</h2>
+                <p className="text-[13px] text-text-secondary mt-0.5">이용권을 구매하면 끊김 없이 계속할 수 있어요.</p>
+              </div>
+              <button
+                className="text-[13px] font-bold text-accent shrink-0"
+                type="button"
+                onClick={() => navigate("/paywall?trigger=trial_countdown")}
+              >
+                보기
+              </button>
+            </div>
+          ) : !isPremiumActive && archivedCount > 0 ? (
             <div className="bg-surface rounded-card p-5 shadow-card flex flex-col gap-3">
               <h2 className="text-[16px] font-bold text-text">숨겨진 루틴 {archivedCount}개</h2>
               <p className="text-[14px] text-text-secondary">
@@ -319,7 +347,7 @@ export default function HomePage() {
                 이용권 보기
               </button>
             </div>
-          )}
+          ) : null}
 
           {/* Progress Card */}
           {totalCount > 0 && (
@@ -343,7 +371,7 @@ export default function HomePage() {
                   {progress}%
                 </div>
               </div>
-              <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
+              <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
                 <motion.div
                   className="bg-primary h-full rounded-full"
                   initial={{ width: 0 }}
@@ -395,6 +423,7 @@ export default function HomePage() {
                     title={routine.title}
                     isCompleted={isCompleted}
                     isSkipped={isSkipped}
+                    justCompleted={justCompletedIds.has(routine.id)}
                     note={note}
                     currentStreak={currentStreak}
                     color={color}
@@ -519,6 +548,13 @@ export default function HomePage() {
         onDismiss={dismissSkipWarning}
         onAction={confirmSkip}
         actionLabel="건너뜀 기록"
+      />
+
+      <StreakToast
+        open={streakToast != null}
+        routineName={streakToast?.routineName ?? ""}
+        streak={streakToast?.streak ?? 0}
+        onDismiss={() => setStreakToast(null)}
       />
     </>
   );

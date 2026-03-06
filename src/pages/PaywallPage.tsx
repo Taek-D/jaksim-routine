@@ -53,6 +53,7 @@ export default function PaywallPage() {
   const [busySku, setBusySku] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [selectedSku, setSelectedSku] = useState<string | null>(null);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const hasTrackedViewRef = useRef(false);
   const trigger = resolveTrigger(location.search);
   const isTrialAvailable = products.length === 0;
@@ -85,7 +86,9 @@ export default function PaywallPage() {
       }
     };
 
-    void loadProducts();
+    void loadProducts().finally(() => {
+      if (!cancelled) setLoadingProducts(false);
+    });
     return () => {
       cancelled = true;
     };
@@ -198,7 +201,41 @@ export default function PaywallPage() {
           ))}
         </div>
 
+        {/* Free vs Pro */}
+        <div className="bg-surface rounded-card p-5 shadow-card mb-8">
+          <h3 className="text-[15px] font-bold text-text mb-4 text-center">무료 vs 프리미엄</h3>
+          <div className="flex flex-col gap-3">
+            {[
+              { feature: "루틴 개수", free: "최대 3개", pro: "무제한" },
+              { feature: "히트맵 & 트렌드", free: "잠금", pro: "전체 공개" },
+              { feature: "스트릭 보호권", free: "없음", pro: "월 2회" },
+              { feature: "기록 일지", free: "최근 3개", pro: "전체 보기" },
+            ].map((row) => (
+              <div key={row.feature} className="grid grid-cols-3 items-center text-[13px] py-2 border-b border-border/40 last:border-b-0">
+                <span className="font-medium text-text-secondary">{row.feature}</span>
+                <span className="text-center text-text-tertiary">{row.free}</span>
+                <span className="text-center font-semibold text-accent">{row.pro}</span>
+              </div>
+            ))}
+            <div className="grid grid-cols-3 text-[11px] text-text-tertiary pt-1">
+              <span />
+              <span className="text-center">무료</span>
+              <span className="text-center font-semibold text-accent">프리미엄</span>
+            </div>
+          </div>
+        </div>
+
         {/* Product Plans */}
+        {loadingProducts ? (
+          <div className="flex flex-col gap-5 mb-8">
+            {[0, 1].map((i) => (
+              <div key={i} className="border border-border rounded-card p-6 animate-pulse">
+                <div className="h-4 bg-muted rounded w-24 mb-3" />
+                <div className="h-6 bg-muted rounded w-32" />
+              </div>
+            ))}
+          </div>
+        ) : (
         <div className="flex flex-col gap-5 mb-8">
           {products.map((product, i) => {
             const isSelected = selectedSku === product.sku;
@@ -250,6 +287,7 @@ export default function PaywallPage() {
             );
           })}
         </div>
+        )}
 
         <p className="text-center text-[12px] text-text-tertiary mb-6 px-4 leading-normal">
           {isTrialAvailable
@@ -280,15 +318,19 @@ export default function PaywallPage() {
             }
           }}
         >
-          {busySku === "trial"
-            ? "시작 중..."
-              : busySku
-                ? "처리 중..."
-                : isTrialAvailable
-                  ? "7일 무료 체험 시작하기"
-                  : selectedProduct
-                    ? `${selectedProduct.priceLabel} 구매하기`
-                    : "이용권 선택하기"}
+          {busySku ? (
+            <>
+              <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              {busySku === "trial" ? "시작 중..." : "처리 중..."}
+            </>
+          ) : isTrialAvailable
+            ? "7일 무료 체험 시작하기"
+            : selectedProduct
+              ? `${selectedProduct.priceLabel} 구매하기`
+              : "이용권 선택하기"}
         </button>
         <button
           className="w-full text-text-secondary text-[14px] font-medium h-[32px] flex items-center justify-center hover:text-text transition-colors"

@@ -17,6 +17,7 @@ interface RoutineCardProps {
   title: string;
   isCompleted: boolean;
   isSkipped: boolean;
+  justCompleted: boolean;
   note: string | undefined;
   currentStreak: number;
   color: ReturnType<typeof getRoutineColor>;
@@ -39,6 +40,7 @@ export default function RoutineCard({
   title,
   isCompleted,
   isSkipped,
+  justCompleted,
   note,
   currentStreak,
   color,
@@ -116,7 +118,8 @@ export default function RoutineCard({
           "flex-1",
           "bg-surface rounded-card px-5 py-[22px] shadow-card flex flex-col gap-4 relative overflow-hidden transition-all border border-transparent border-l-4",
           color.accent,
-          isCompleted && "bg-emerald-50/40 border-emerald-100 shadow-emerald-100/50"
+          isCompleted && "bg-emerald-50/40 border-emerald-100 shadow-emerald-100/50",
+          isSkipped && "opacity-60 bg-gray-50/60"
         )}
       >
         {isCompleted && (
@@ -127,9 +130,14 @@ export default function RoutineCard({
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               {isCompleted ? (
-                <span className="bg-accent-light text-emerald-700 text-[11px] font-bold px-2.5 py-1 rounded-badge flex items-center gap-1">
+                <motion.span
+                  className="bg-accent-light text-emerald-700 text-[11px] font-bold px-2.5 py-1 rounded-badge flex items-center gap-1"
+                  initial={justCompleted ? { scale: 0 } : false}
+                  animate={{ scale: 1 }}
+                  transition={justCompleted ? { type: "spring", stiffness: 300, damping: 15 } : undefined}
+                >
                   <Icon name="check" size={12} /> 완료됨
-                </span>
+                </motion.span>
               ) : isSkipped ? (
                 <span className="bg-muted text-text-tertiary text-[11px] font-bold px-2.5 py-1 rounded-badge">
                   건너뜀
