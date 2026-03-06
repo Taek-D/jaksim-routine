@@ -8,18 +8,18 @@ import { motion, AnimatePresence } from "motion/react";
 
 const onboardingSlides = [
   {
-    emoji: "🧭",
+    emoji: "\u{1F9ED}",
     title: "작심삼일도 괜찮아요",
     description:
       "중요한 건 완벽함보다 다시 시작하는 힘이에요. 작은 루틴을 꾸준히 이어가볼게요.",
   },
   {
-    emoji: "✅",
+    emoji: "\u2705",
     title: "오늘 할 일 하나만 체크해요",
     description: "매일 원탭으로 기록하고, 주간 리포트에서 나의 흐름을 확인할 수 있어요.",
   },
   {
-    emoji: "📈",
+    emoji: "\u{1F4C8}",
     title: "실패해도 기록은 남아요",
     description: "끊겨도 괜찮아요. 다시 시작 버튼으로 언제든 재도전할 수 있어요.",
   },
@@ -56,7 +56,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white relative overflow-hidden">
+    <div className="flex flex-col h-full bg-surface relative overflow-hidden">
       {/* Indicators */}
       <div className="absolute top-12 left-0 right-0 flex justify-center gap-2 z-20">
         {onboardingSlides.map((_, i) => (
@@ -64,7 +64,7 @@ export default function OnboardingPage() {
             key={i}
             className={cn(
               "h-2 rounded-full transition-all duration-300",
-              i === index ? "w-5 bg-[#111827]" : "w-2 bg-gray-200"
+              i === index ? "w-5 bg-accent" : "w-2 bg-border"
             )}
           />
         ))}
@@ -81,13 +81,13 @@ export default function OnboardingPage() {
             transition={{ duration: 0.3 }}
             className="flex flex-col items-center text-center px-8"
           >
-            <div className="w-[160px] h-[160px] bg-gray-50 rounded-full flex items-center justify-center mb-8 shadow-sm">
-              <span className="text-[72px] select-none">{slide.emoji}</span>
+            <div className="w-[140px] h-[140px] bg-muted rounded-full flex items-center justify-center mb-10 shadow-sm">
+              <span className="text-[72px] select-none leading-none">{slide.emoji}</span>
             </div>
-            <h1 className="text-[22px] font-bold text-[#101828] mb-3 leading-tight">
+            <h1 className="text-[24px] font-bold text-text mb-4 leading-tight">
               {slide.title}
             </h1>
-            <p className="text-[15px] text-gray-600 leading-relaxed">
+            <p className="text-[15px] text-text-secondary leading-relaxed max-w-[280px]">
               {slide.description}
             </p>
           </motion.div>
@@ -98,7 +98,7 @@ export default function OnboardingPage() {
       <div className="w-full px-6 pb-12 pt-4 z-20">
         {!isLast ? (
           <button
-            className="w-full h-[56px] rounded-[18px] bg-[#111827] text-white text-[16px] font-bold shadow-lg shadow-gray-900/10 active:scale-[0.98] transition-transform flex items-center justify-center"
+            className="w-full h-[56px] rounded-[18px] bg-primary text-white text-[16px] font-bold shadow-lg shadow-gray-900/10 active:scale-[0.98] transition-transform flex items-center justify-center"
             type="button"
             onClick={() => setIndex((prev) => prev + 1)}
           >
@@ -107,14 +107,14 @@ export default function OnboardingPage() {
         ) : (
           <>
             <button
-              className="w-full h-[56px] rounded-[18px] bg-[#111827] text-white text-[16px] font-bold shadow-lg shadow-gray-900/10 active:scale-[0.98] transition-transform flex items-center justify-center"
+              className="w-full h-[56px] rounded-[18px] bg-primary text-white text-[16px] font-bold shadow-lg shadow-gray-900/10 active:scale-[0.98] transition-transform flex items-center justify-center"
               type="button"
               onClick={() => completeAndNavigate(nextPath ?? "/routine/new")}
             >
               루틴 시작하기
             </button>
             <button
-              className="w-full mt-3 text-gray-400 text-[14px] font-medium h-[40px] hover:text-gray-600 transition-colors"
+              className="w-full mt-3 text-text-tertiary text-[14px] font-medium h-[40px] hover:text-text-secondary transition-colors"
               type="button"
               onClick={goHome}
             >

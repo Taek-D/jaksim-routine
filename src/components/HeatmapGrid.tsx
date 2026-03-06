@@ -7,10 +7,10 @@ interface HeatmapGridProps {
 
 const LEVEL_COLORS: Record<HeatmapCell["level"], string> = {
   0: "bg-gray-100",
-  1: "bg-green-200",
-  2: "bg-green-400",
-  3: "bg-green-500",
-  4: "bg-green-700",
+  1: "bg-emerald-200",
+  2: "bg-emerald-400",
+  3: "bg-emerald-500",
+  4: "bg-emerald-700",
 };
 
 const DAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
@@ -34,13 +34,13 @@ export default function HeatmapGrid({ cells }: HeatmapGridProps) {
   const totalCols = Math.ceil(paddedCells.length / 7);
 
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-[3px]">
       {/* Day labels column */}
-      <div className="flex flex-col gap-1 mr-1 shrink-0">
+      <div className="flex flex-col gap-[3px] mr-1 shrink-0">
         {DAY_LABELS.map((label) => (
           <div
             key={label}
-            className="w-4 h-[14px] flex items-center justify-center text-[9px] text-gray-400"
+            className="w-4 h-4 flex items-center justify-center text-[9px] text-text-tertiary"
           >
             {label}
           </div>
@@ -49,7 +49,7 @@ export default function HeatmapGrid({ cells }: HeatmapGridProps) {
 
       {/* Grid columns */}
       {Array.from({ length: totalCols }, (_, colIndex) => (
-        <div key={colIndex} className="flex flex-col gap-1">
+        <div key={colIndex} className="flex flex-col gap-[3px]">
           {Array.from({ length: 7 }, (__, rowIndex) => {
             const cellIndex = colIndex * 7 + rowIndex;
             const cell = paddedCells[cellIndex] ?? null;
@@ -58,7 +58,7 @@ export default function HeatmapGrid({ cells }: HeatmapGridProps) {
               return (
                 <div
                   key={rowIndex}
-                  className="w-[14px] h-[14px] rounded-[3px] bg-transparent"
+                  className="w-4 h-4 rounded-[3px] bg-transparent"
                 />
               );
             }
@@ -67,7 +67,7 @@ export default function HeatmapGrid({ cells }: HeatmapGridProps) {
               <div
                 key={cell.date}
                 className={cn(
-                  "w-[14px] h-[14px] rounded-[3px] transition-colors",
+                  "w-4 h-4 rounded-[3px] transition-colors",
                   LEVEL_COLORS[cell.level]
                 )}
                 title={`${cell.date}: ${cell.count}회 체크인`}

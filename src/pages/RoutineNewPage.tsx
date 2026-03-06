@@ -50,20 +50,20 @@ export default function RoutineNewPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-surface">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-md px-4 h-[56px] flex items-center justify-between border-b border-gray-100">
-        <Link to="/home" className="w-10 h-10 flex items-center justify-start text-gray-600">
+      <header className="sticky top-0 z-10 bg-surface/95 backdrop-blur-md px-4 h-[56px] flex items-center justify-between border-b border-border/50">
+        <Link to="/home" className="w-10 h-10 flex items-center justify-start text-text-secondary">
           <Icon name="arrow_back" size={24} />
         </Link>
-        <h1 className="text-[17px] font-bold text-[#101828]">새 루틴 만들기</h1>
+        <h1 className="text-[17px] font-bold text-text">새 루틴 만들기</h1>
         <div className="w-10" />
       </header>
 
       <main className="flex-1 px-5 pt-6 pb-24 overflow-y-auto">
         {/* Name Input */}
         <section className="mb-10">
-          <label className="block text-[15px] font-bold text-[#101828] mb-3">
+          <label className="block text-[15px] font-bold text-text mb-3">
             어떤 루틴을 시작할까요?
           </label>
           <input
@@ -74,16 +74,16 @@ export default function RoutineNewPage() {
               setTitle(event.target.value);
             }}
             placeholder="루틴 이름을 입력해주세요"
-            className="w-full border border-gray-300 rounded-xl px-4 py-3.5 text-[16px] text-[#101828] outline-none focus:border-[#111827] focus:ring-1 focus:ring-[#111827] transition-all placeholder:text-gray-400"
+            className="w-full border border-border rounded-input px-4 py-3.5 text-[16px] text-text outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder:text-text-tertiary"
             maxLength={20}
           />
-          <p className="mt-2 text-[13px] text-gray-500 text-right">{title.length}/20</p>
+          <p className="mt-2 text-[13px] text-text-secondary text-right">{title.length}/20</p>
         </section>
 
         {/* Recommendations */}
         <section className="mb-10">
           <div className="flex items-center justify-between mb-3">
-            <label className="block text-[15px] font-bold text-[#101828]">추천 루틴</label>
+            <label className="block text-[15px] font-bold text-text">추천 루틴</label>
           </div>
           <div className="flex flex-wrap gap-2.5">
             {ROUTINE_TEMPLATES.map((template) => (
@@ -97,10 +97,10 @@ export default function RoutineNewPage() {
                   setDays(template.daysOfWeek);
                 }}
                 className={cn(
-                  "px-4 py-2.5 rounded-2xl text-[15px] font-medium transition-all",
+                  "px-4 py-2.5 rounded-card text-[15px] font-medium transition-all active:scale-95",
                   selectedTemplateKey === template.key
-                    ? "bg-[#111827] text-white font-semibold"
-                    : "bg-[#f2f4f7] text-[#344054] hover:bg-gray-200"
+                    ? "bg-accent text-white font-semibold"
+                    : "bg-muted text-text-secondary hover:bg-border"
                 )}
               >
                 {template.title}
@@ -111,18 +111,18 @@ export default function RoutineNewPage() {
 
         {/* Day Selection */}
         <section className="mb-6">
-          <label className="block text-[15px] font-bold text-[#101828] mb-4">실천할 요일</label>
+          <label className="block text-[15px] font-bold text-text mb-4">실천할 요일</label>
           <DaySelector days={days} onToggle={toggleDay} />
         </section>
       </main>
 
       {/* Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 max-w-[640px] mx-auto pb-[env(safe-area-inset-bottom)]">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-surface border-t border-border/50 max-w-[640px] mx-auto pb-[env(safe-area-inset-bottom)]">
         <button
           type="button"
           onClick={saveRoutine}
           disabled={!canSave}
-          className="w-full h-[52px] rounded-2xl bg-[#111827] text-white text-[16px] font-bold shadow-sm disabled:bg-gray-300 disabled:cursor-not-allowed active:scale-[0.98] transition-all flex items-center justify-center"
+          className="w-full h-[52px] rounded-card bg-primary text-white text-[16px] font-bold shadow-sm disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed active:scale-[0.98] transition-all flex items-center justify-center"
         >
           저장하기
         </button>

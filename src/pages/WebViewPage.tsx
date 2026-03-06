@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "../components/Icon";
 
@@ -7,8 +8,13 @@ export default function WebViewPage() {
   const url = searchParams.get("url");
   const title = searchParams.get("title") ?? "";
 
+  useEffect(() => {
+    if (!url) {
+      navigate(-1);
+    }
+  }, [navigate, url]);
+
   if (!url) {
-    navigate(-1);
     return null;
   }
 

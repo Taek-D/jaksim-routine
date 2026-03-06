@@ -14,6 +14,37 @@ function resolveTrigger(search: string): string {
   return value ?? "unknown";
 }
 
+const FEATURE_ITEMS = [
+  {
+    icon: "all_inclusive",
+    title: "루틴 개수 제한 없음",
+    desc: "3개 제한 없이 원하는 만큼 루틴을 만드세요",
+    iconBg: "bg-accent-light",
+    iconColor: "text-accent",
+  },
+  {
+    icon: "bar_chart",
+    title: "캘린더 히트맵 & 월간 트렌드",
+    desc: "30일 체크인 히트맵과 주간 달성률 추이를 확인하세요",
+    iconBg: "bg-blue-50",
+    iconColor: "text-blue-600",
+  },
+  {
+    icon: "shield",
+    title: "스트릭 보호권 (월 2회)",
+    desc: "놓친 하루를 보호해서 소중한 스트릭을 지키세요",
+    iconBg: "bg-premium-light",
+    iconColor: "text-premium",
+  },
+  {
+    icon: "folder_special",
+    title: "프리미엄 템플릿 (출시 예정)",
+    desc: "성공한 사람들의 루틴 팩을 바로 적용할 수 있어요",
+    iconBg: "bg-amber-50",
+    iconColor: "text-amber-600",
+  },
+];
+
 export default function PaywallPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,6 +55,8 @@ export default function PaywallPage() {
   const [selectedSku, setSelectedSku] = useState<string | null>(null);
   const hasTrackedViewRef = useRef(false);
   const trigger = resolveTrigger(location.search);
+  const isTrialAvailable = products.length === 0;
+  const selectedProduct = selectedSku ? products.find((p) => p.sku === selectedSku) : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -36,9 +69,7 @@ export default function PaywallPage() {
 
       if (runtimeProducts.length > 0) {
         setProducts(runtimeProducts);
-        if (runtimeProducts.length > 0) {
-          setSelectedSku(runtimeProducts[runtimeProducts.length - 1].sku);
-        }
+        setSelectedSku(runtimeProducts[runtimeProducts.length - 1].sku);
         return;
       }
 
@@ -49,6 +80,8 @@ export default function PaywallPage() {
       setProducts(stubProducts);
       if (stubProducts.length > 0) {
         setSelectedSku(stubProducts[stubProducts.length - 1].sku);
+      } else {
+        setSelectedSku(null);
       }
     };
 
@@ -123,64 +156,43 @@ export default function PaywallPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white relative">
+    <div className="flex flex-col h-full bg-surface relative">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md px-4 py-3 flex items-center justify-center">
+      <header className="sticky top-0 z-10 bg-surface/90 backdrop-blur-md px-4 py-3 flex items-center justify-center">
         <h1 className="text-[17px] font-bold text-transparent select-none">Premium</h1>
       </header>
 
       <main className="flex-1 px-5 pt-4 pb-40 overflow-y-auto">
         {/* Hero */}
         <div className="flex flex-col items-center text-center mb-10 mt-4">
-          <div className="w-16 h-16 bg-blue-50 rounded-[22px] flex items-center justify-center mb-5 shadow-sm">
-            <Icon name="workspace_premium" size={32} className="text-blue-500" />
+          <div className="w-16 h-16 bg-premium-light rounded-[22px] flex items-center justify-center mb-5 shadow-sm">
+            <Icon name="workspace_premium" size={32} className="text-premium" />
           </div>
-          <h2 className="text-[24px] font-bold leading-tight text-[#101828] mb-2">
+          <h2 className="text-[24px] font-bold leading-tight text-text mb-2">
             프리미엄 이용권으로
             <br />
             한계를 뛰어넘으세요
           </h2>
-          <p className="text-[15px] text-gray-500 leading-relaxed">
-            현재 <span className="font-semibold text-[#101828]">{isPremiumActive ? "프리미엄 이용" : "무료 이용"} 중</span>입니다.
+          <p className="text-[15px] text-text-secondary leading-relaxed">
+            현재 <span className="font-semibold text-text">{isPremiumActive ? "프리미엄 이용" : "무료 이용"} 중</span>입니다.
             <br />
             루틴 개수 제한 없이 더 나은 나를 만나보세요.
           </p>
           {state.entitlement.premiumUntil && (
-            <p className="text-[13px] text-gray-400 mt-2">만료 예정: {formatKstDate(state.entitlement.premiumUntil)}</p>
+            <p className="text-[13px] text-text-tertiary mt-2">만료 예정: {formatKstDate(state.entitlement.premiumUntil)}</p>
           )}
         </div>
 
         {/* Features */}
         <div className="space-y-6 mb-10 px-2">
-          {[
-            {
-              icon: "all_inclusive",
-              title: "루틴 개수 제한 없음",
-              desc: "3개 제한 없이 원하는 만큼 루틴을 만드세요",
-            },
-            {
-              icon: "bar_chart",
-              title: "캘린더 히트맵 & 월간 트렌드",
-              desc: "30일 체크인 히트맵과 주간 달성률 추이를 확인하세요",
-            },
-            {
-              icon: "shield",
-              title: "스트릭 보호권 (월 2회)",
-              desc: "놓친 하루를 보호해서 소중한 스트릭을 지키세요",
-            },
-            {
-              icon: "folder_special",
-              title: "프리미엄 템플릿 (출시 예정)",
-              desc: "성공한 사람들의 루틴 팩을 바로 적용할 수 있어요",
-            },
-          ].map((feature, i) => (
+          {FEATURE_ITEMS.map((feature, i) => (
             <div key={i} className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                <Icon name={feature.icon} size={20} className="text-[#101828]" />
+              <div className={cn("flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center", feature.iconBg)}>
+                <Icon name={feature.icon} size={20} className={feature.iconColor} />
               </div>
               <div className="text-left">
-                <h3 className="text-[16px] font-bold text-[#101828]">{feature.title}</h3>
-                <p className="text-[13px] text-gray-500">{feature.desc}</p>
+                <h3 className="text-[16px] font-bold text-text">{feature.title}</h3>
+                <p className="text-[13px] text-text-secondary">{feature.desc}</p>
               </div>
             </div>
           ))}
@@ -195,10 +207,10 @@ export default function PaywallPage() {
               <label
                 key={product.sku}
                 className={cn(
-                  "block border rounded-2xl p-6 cursor-pointer relative transition-all",
+                  "block border rounded-card p-6 cursor-pointer relative transition-all",
                   isSelected
-                    ? "border-[#111827] bg-gray-50 ring-1 ring-[#111827]"
-                    : "border-gray-200 hover:bg-gray-50"
+                    ? "border-accent bg-accent-light/30 ring-1 ring-accent"
+                    : "border-border hover:bg-muted"
                 )}
               >
                 <input
@@ -210,23 +222,23 @@ export default function PaywallPage() {
                   className="hidden"
                 />
                 {isLast && products.length > 1 && (
-                  <div className="absolute -top-3 left-4 bg-[#111827] text-white text-[11px] font-bold px-2 py-1 rounded-md shadow-sm">
+                  <div className="absolute -top-3 left-4 bg-accent text-white text-[11px] font-bold px-2 py-1 rounded-md shadow-sm">
                     BEST VALUE
                   </div>
                 )}
                 <div className="flex justify-between items-center">
                   <div className="flex flex-col">
-                    <span className="text-[14px] font-medium text-gray-500">{product.title}</span>
+                    <span className="text-[14px] font-medium text-text-secondary">{product.title}</span>
                     <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-[18px] font-bold text-[#101828]">{product.priceLabel}</span>
+                      <span className="text-[18px] font-bold text-text">{product.priceLabel}</span>
                     </div>
                   </div>
                   <div
                     className={cn(
                       "w-6 h-6 rounded-full border flex items-center justify-center transition-all",
                       isSelected
-                        ? "bg-[#111827] border-[#111827]"
-                        : "border-gray-300"
+                        ? "bg-accent border-accent"
+                        : "border-border"
                     )}
                   >
                     {isSelected && (
@@ -239,42 +251,47 @@ export default function PaywallPage() {
           })}
         </div>
 
-        <p className="text-center text-[12px] text-gray-400 mb-6 px-4 leading-normal">
-          7일 무료 체험 종료 후 이용권이 자동 만료돼요. 유료 이용권은 기간 내 설정에서
-          해지할 수 있습니다.
+        <p className="text-center text-[12px] text-text-tertiary mb-6 px-4 leading-normal">
+          {isTrialAvailable
+            ? "7일 무료 체험 종료 후 이용권이 자동 만료돼요."
+            : "유료 이용권은 기간 내 설정에서 해지할 수 있습니다."}
         </p>
 
         {notice && (
-          <div className="bg-gray-50 rounded-xl p-3 mb-4 text-center">
-            <p className="text-[14px] text-gray-600">{notice}</p>
+          <div className="bg-muted rounded-input p-3 mb-4 text-center">
+            <p className="text-[14px] text-text-secondary">{notice}</p>
           </div>
         )}
       </main>
 
       {/* Footer Action */}
-      <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(0,0,0,0.04)] z-20">
+      <div className="sticky bottom-0 bg-surface border-t border-border/50 p-4 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(0,0,0,0.04)] z-20">
         <button
-          className="w-full bg-[#111827] text-white font-bold text-[16px] h-[52px] rounded-[14px] flex items-center justify-center shadow-lg active:scale-[0.98] transition-transform mb-3 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className="w-full bg-primary text-white font-bold text-[16px] h-[52px] rounded-button flex items-center justify-center shadow-lg active:scale-[0.98] transition-transform mb-3 disabled:bg-gray-300 disabled:cursor-not-allowed"
           type="button"
           disabled={busySku != null}
           onClick={() => {
-            if (selectedSku) {
+            if (isTrialAvailable) {
+              void handleStartTrial();
+            } else if (selectedSku) {
               void handlePurchase(selectedSku);
             } else {
-              void handleStartTrial();
+              setNotice("구매할 이용권을 선택해 주세요.");
             }
           }}
         >
           {busySku === "trial"
             ? "시작 중..."
-            : busySku
-              ? "처리 중..."
-              : selectedSku
-                ? `${products.find((p) => p.sku === selectedSku)?.priceLabel ?? ""} 구매하기`
-                : "7일 무료 체험 시작하기"}
+              : busySku
+                ? "처리 중..."
+                : isTrialAvailable
+                  ? "7일 무료 체험 시작하기"
+                  : selectedProduct
+                    ? `${selectedProduct.priceLabel} 구매하기`
+                    : "이용권 선택하기"}
         </button>
         <button
-          className="w-full text-gray-500 text-[14px] font-medium h-[32px] flex items-center justify-center hover:text-[#101828] transition-colors"
+          className="w-full text-text-secondary text-[14px] font-medium h-[32px] flex items-center justify-center hover:text-text transition-colors"
           type="button"
           onClick={() => navigate(-1)}
         >

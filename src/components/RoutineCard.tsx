@@ -80,7 +80,7 @@ export default function RoutineCard({
           <Icon
             name={isSelected ? "check_box" : "check_box_outline_blank"}
             size={24}
-            className={isSelected ? "text-[#111827]" : "text-gray-300"}
+            className={isSelected ? "text-primary" : "text-gray-300"}
           />
         </button>
       )}
@@ -89,16 +89,16 @@ export default function RoutineCard({
       {effectiveCanSwipe && (
         <>
           <motion.div
-            className="absolute inset-0 rounded-[20px] bg-emerald-100 flex items-center pl-5 pointer-events-none"
+            className="absolute inset-0 rounded-card bg-accent-light flex items-center pl-5 pointer-events-none"
             style={{ opacity: rightHintOpacity }}
           >
-            <Icon name="check_circle" size={28} className="text-emerald-600" />
+            <Icon name="check_circle" size={28} className="text-accent" />
           </motion.div>
           <motion.div
-            className="absolute inset-0 rounded-[20px] bg-gray-200 flex items-center justify-end pr-5 pointer-events-none"
+            className="absolute inset-0 rounded-card bg-muted flex items-center justify-end pr-5 pointer-events-none"
             style={{ opacity: leftHintOpacity }}
           >
-            <Icon name="fast_forward" size={28} className="text-gray-500" />
+            <Icon name="fast_forward" size={28} className="text-text-tertiary" />
           </motion.div>
         </>
       )}
@@ -114,32 +114,32 @@ export default function RoutineCard({
         style={effectiveCanSwipe ? { x } : undefined}
         className={cn(
           "flex-1",
-          "bg-white rounded-[20px] p-5 shadow-sm flex flex-col gap-4 relative overflow-hidden transition-all border border-transparent border-l-4",
+          "bg-surface rounded-card px-5 py-[22px] shadow-card flex flex-col gap-4 relative overflow-hidden transition-all border border-transparent border-l-4",
           color.accent,
-          isCompleted && "bg-emerald-50/60 border-emerald-100 shadow-emerald-100/50"
+          isCompleted && "bg-emerald-50/40 border-emerald-100 shadow-emerald-100/50"
         )}
       >
         {isCompleted && (
-          <div className="absolute inset-0 bg-gray-50/50 pointer-events-none z-0" />
+          <div className="absolute inset-0 bg-emerald-50/20 pointer-events-none z-0" />
         )}
 
         <div className="flex justify-between items-start z-10">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               {isCompleted ? (
-                <span className="bg-green-100 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                <span className="bg-accent-light text-emerald-700 text-[11px] font-bold px-2.5 py-1 rounded-badge flex items-center gap-1">
                   <Icon name="check" size={12} /> 완료됨
                 </span>
               ) : isSkipped ? (
-                <span className="bg-gray-100 text-gray-500 text-[11px] font-bold px-2.5 py-1 rounded-full">
+                <span className="bg-muted text-text-tertiary text-[11px] font-bold px-2.5 py-1 rounded-badge">
                   건너뜀
                 </span>
               ) : currentStreak > 0 ? (
-                <span className="bg-orange-50 text-orange-700 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                <span className="bg-streak-light text-streak text-[11px] font-bold px-2.5 py-1 rounded-badge flex items-center gap-1">
                   <Icon name="local_fire_department" size={12} /> {currentStreak}일 연속
                 </span>
               ) : (
-                <span className="bg-gray-100 text-gray-500 text-[11px] font-bold px-2.5 py-1 rounded-full">
+                <span className="bg-muted text-text-tertiary text-[11px] font-bold px-2.5 py-1 rounded-badge">
                   미체크
                 </span>
               )}
@@ -147,19 +147,19 @@ export default function RoutineCard({
             <div className="flex flex-col gap-0.5">
               <Link
                 to={`/routine/${routineId}`}
-                className="text-[18px] font-bold text-[#101828] transition-colors hover:underline decoration-2 underline-offset-4"
+                className="text-[18px] font-bold text-text transition-colors hover:underline decoration-2 underline-offset-4"
               >
                 {title}
               </Link>
               {isCompleted && note && (
-                <p className="text-[14px] text-gray-600 mt-1 pl-3 border-l-[3px] border-emerald-300 bg-white/50 py-1 pr-2 rounded-r-md">
+                <p className="text-[14px] text-text-secondary mt-1 pl-3 border-l-[3px] border-accent bg-white/50 py-1 pr-2 rounded-r-md">
                   {note}
                 </p>
               )}
             </div>
           </div>
           {!isCompleted && !isSkipped && !isSelectMode && (
-            <Link to={`/routine/${routineId}`} className="text-gray-400 hover:text-gray-600">
+            <Link to={`/routine/${routineId}`} className="text-text-tertiary hover:text-text-secondary">
               <Icon name="more_horiz" />
             </Link>
           )}
@@ -177,7 +177,7 @@ export default function RoutineCard({
             >
               <input
                 type="text"
-                className="flex-1 h-[38px] px-3 rounded-lg border border-gray-200 text-[14px] text-[#101828] placeholder:text-gray-400 focus:outline-none focus:border-emerald-400"
+                className="flex-1 h-[38px] px-3 rounded-input border border-border text-[14px] text-text placeholder:text-text-tertiary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
                 placeholder="한 줄 메모 남기기 (선택)"
                 maxLength={120}
                 value={inlineMemoText}
@@ -190,14 +190,14 @@ export default function RoutineCard({
                 autoFocus
               />
               <button
-                className="h-[38px] px-3 rounded-lg bg-emerald-600 text-white text-[13px] font-semibold shrink-0 active:scale-95"
+                className="h-[38px] px-3 rounded-input bg-accent text-white text-[13px] font-semibold shrink-0 active:scale-95 transition-transform"
                 type="button"
                 onClick={onInlineMemoSubmit}
               >
                 저장
               </button>
               <button
-                className="text-[13px] text-gray-400 shrink-0"
+                className="text-[13px] text-text-tertiary shrink-0"
                 type="button"
                 onClick={onInlineMemoDismiss}
               >
@@ -211,7 +211,7 @@ export default function RoutineCard({
           <div className="grid grid-cols-[1fr_auto_auto] gap-2 z-10">
             {isSkipped ? (
               <button
-                className="col-span-3 h-[42px] rounded-xl bg-gray-100 text-gray-400 text-[14px] font-medium flex items-center justify-center gap-1.5 hover:bg-gray-200 transition-colors"
+                className="col-span-3 h-[42px] rounded-button bg-muted text-text-tertiary text-[14px] font-medium flex items-center justify-center gap-1.5 transition-colors"
                 type="button"
                 disabled
               >
@@ -220,14 +220,14 @@ export default function RoutineCard({
             ) : (
               <>
                 <button
-                  className="h-[46px] rounded-xl bg-[#111827] text-white text-[15px] font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center shadow-sm active:scale-95"
+                  className="h-[46px] rounded-button bg-primary text-white text-[15px] font-semibold hover:bg-primary-light transition-colors flex items-center justify-center shadow-sm active:scale-95"
                   type="button"
                   onClick={onComplete}
                 >
                   완료
                 </button>
                 <button
-                  className="h-[46px] w-[46px] rounded-xl bg-[#f2f4f7] text-[#344054] hover:bg-gray-200 transition-colors flex items-center justify-center active:scale-95"
+                  className="h-[46px] w-[46px] rounded-button bg-muted text-text-secondary hover:bg-border transition-colors flex items-center justify-center active:scale-95"
                   type="button"
                   onClick={onOpenNote}
                   title="메모+완료"
@@ -235,7 +235,7 @@ export default function RoutineCard({
                   <Icon name="edit_note" size={20} />
                 </button>
                 <button
-                  className="h-[46px] w-[46px] rounded-xl bg-white border border-gray-200 text-[#475467] hover:bg-gray-50 transition-colors flex items-center justify-center active:scale-95"
+                  className="h-[46px] w-[46px] rounded-button bg-surface border border-border text-text-secondary hover:bg-muted transition-colors flex items-center justify-center active:scale-95"
                   type="button"
                   onClick={onSkip}
                 >

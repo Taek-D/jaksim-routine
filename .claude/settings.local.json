@@ -2,7 +2,16 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm lint --fix --quiet 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
         "hooks": [
           {
             "type": "command",
@@ -14,8 +23,12 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "type": "command",
-        "command": "bash -c 'if echo \"$TOOL_INPUT\" | grep -q \"git commit\"; then pnpm typecheck && pnpm lint; fi'"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if echo \"$TOOL_INPUT\" | grep -q \"git commit\"; then pnpm typecheck && pnpm lint; fi'"
+          }
+        ]
       }
     ]
   },

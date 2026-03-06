@@ -58,19 +58,19 @@ export default function NoteModal({
       onClick={onCancel}
     >
       <div
-        className="w-[min(100%,560px)] bg-white rounded-2xl shadow-[0_16px_32px_rgba(16,24,40,0.2)] p-5 flex flex-col gap-3"
+        className="w-[min(100%,560px)] bg-surface rounded-card shadow-elevated p-5 flex flex-col gap-3"
         role="dialog"
         aria-modal="true"
         aria-labelledby="checkin-note-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="checkin-note-title" className="text-[16px] font-bold text-[#101828]">
+        <h2 id="checkin-note-title" className="text-[16px] font-bold text-text">
           {title}
         </h2>
-        <p className="text-[14px] text-gray-500">{description}</p>
+        <p className="text-[14px] text-text-secondary">{description}</p>
         <textarea
           ref={textareaRef}
-          className="w-full min-h-[110px] border border-gray-300 rounded-xl px-4 py-3 text-[15px] text-[#101828] outline-none focus:border-[#111827] focus:ring-1 focus:ring-[#111827] transition-all placeholder:text-gray-400 resize-y"
+          className="w-full min-h-[110px] border border-border rounded-input px-4 py-3 text-[15px] text-text outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder:text-text-tertiary resize-y"
           value={note}
           onChange={(event) => onChangeNote(event.target.value)}
           placeholder={placeholder}
@@ -78,14 +78,14 @@ export default function NoteModal({
         />
         <div className="flex gap-2">
           <button
-            className="flex-1 h-[44px] rounded-xl bg-[#f2f4f7] text-[#344054] text-[15px] font-medium hover:bg-gray-200 transition-colors"
+            className="flex-1 h-[44px] rounded-button bg-muted text-text-secondary text-[15px] font-medium hover:bg-border transition-colors"
             type="button"
             onClick={onCancel}
           >
             {cancelLabel}
           </button>
           <button
-            className="flex-1 h-[44px] rounded-xl bg-[#111827] text-white text-[15px] font-semibold hover:bg-gray-800 transition-colors active:scale-[0.98]"
+            className="flex-1 h-[44px] rounded-button bg-primary text-white text-[15px] font-semibold hover:bg-primary-light transition-colors active:scale-[0.98]"
             type="button"
             onClick={onConfirm}
           >

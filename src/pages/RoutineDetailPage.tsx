@@ -56,30 +56,30 @@ export default function RoutineDetailPage() {
 
   return (
     <>
-      <div className="flex flex-col h-full bg-[#f4f6f8]">
+      <div className="flex flex-col h-full bg-background">
         {/* Header */}
-        <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-md px-4 h-[56px] flex items-center justify-between border-b border-gray-100">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 flex items-center justify-start text-gray-600" type="button">
+        <header className="sticky top-0 z-10 bg-surface/95 backdrop-blur-md px-4 h-[56px] flex items-center justify-between border-b border-border/50">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 flex items-center justify-start text-text-secondary" type="button">
             <Icon name="arrow_back" size={24} />
           </button>
-          <h1 className="text-[17px] font-bold text-[#101828]">루틴 상세</h1>
-          <Link to={`/routine/${routine.id}/edit`} className="w-10 h-10 flex items-center justify-end text-gray-600">
+          <h1 className="text-[17px] font-bold text-text">루틴 상세</h1>
+          <Link to={`/routine/${routine.id}/edit`} className="w-10 h-10 flex items-center justify-end text-text-secondary">
             <Icon name="edit" size={22} />
           </Link>
         </header>
 
         <main className="flex-1 p-4 overflow-y-auto flex flex-col gap-4">
           {/* Routine Info Card */}
-          <section className="bg-white rounded-[20px] p-5 shadow-sm flex flex-col gap-3">
-            <h2 className="text-[20px] font-bold text-[#101828]">{routine.title}</h2>
+          <section className="bg-surface rounded-card p-5 shadow-card flex flex-col gap-3">
+            <h2 className="text-[20px] font-bold text-text">{routine.title}</h2>
             <div className="flex items-center gap-3">
-              <span className="text-[13px] text-gray-500">
+              <span className="text-[13px] text-text-secondary">
                 목표 요일: {routine.daysOfWeek.join(", ")}
               </span>
             </div>
             {streak > 0 && (
-              <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-full border border-orange-100 self-start">
-                <Icon name="local_fire_department" size={16} className="text-orange-600" />
+              <div className="flex items-center gap-1.5 bg-streak-light px-3 py-1.5 rounded-badge border border-orange-100 self-start">
+                <Icon name="local_fire_department" size={16} className="text-streak" />
                 <span className="text-[13px] font-bold text-orange-700">{streak}일 연속</span>
               </div>
             )}
@@ -88,7 +88,7 @@ export default function RoutineDetailPage() {
           {/* Action Buttons */}
           <div className="flex gap-2">
             <button
-              className="flex-1 h-[46px] rounded-xl bg-[#111827] text-white text-[15px] font-semibold active:scale-95 transition-transform flex items-center justify-center gap-2"
+              className="flex-1 h-[46px] rounded-button bg-primary text-white text-[15px] font-semibold active:scale-95 transition-transform flex items-center justify-center gap-2"
               type="button"
               onClick={openNoteModal}
             >
@@ -96,7 +96,7 @@ export default function RoutineDetailPage() {
               메모+완료
             </button>
             <button
-              className="flex-1 h-[46px] rounded-xl bg-[#f2f4f7] text-[#344054] text-[15px] font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 active:scale-95"
+              className="flex-1 h-[46px] rounded-button bg-muted text-text-secondary text-[15px] font-semibold hover:bg-border transition-colors flex items-center justify-center gap-2 active:scale-95"
               type="button"
               onClick={() => {
                 const ok = window.confirm("정말 다시 시작할까요? 현재 스트릭이 초기화돼요.");
@@ -117,10 +117,10 @@ export default function RoutineDetailPage() {
           </div>
 
           {/* Recent Records */}
-          <section className="bg-white rounded-[20px] p-5 shadow-sm flex flex-col gap-3">
-            <h3 className="text-[16px] font-bold text-[#101828]">최근 기록 (최대 14개)</h3>
+          <section className="bg-surface rounded-card p-5 shadow-card flex flex-col gap-3">
+            <h3 className="text-[16px] font-bold text-text">최근 기록 (최대 14개)</h3>
             {routineCheckins.length === 0 && (
-              <p className="text-[14px] text-gray-400">아직 기록이 없어요.</p>
+              <p className="text-[14px] text-text-tertiary">아직 기록이 없어요.</p>
             )}
             {routineCheckins.length > 0 && (
               <div className="flex flex-col gap-2">
@@ -128,32 +128,32 @@ export default function RoutineDetailPage() {
                   <div
                     key={checkin.id}
                     className={cn(
-                      "flex items-center justify-between p-3 rounded-xl border",
+                      "flex items-center justify-between p-3 rounded-input border",
                       checkin.status === "COMPLETED"
-                        ? "bg-green-50 border-green-100"
-                        : "bg-gray-50 border-gray-100"
+                        ? "bg-accent-light/40 border-emerald-100"
+                        : "bg-muted border-border"
                     )}
                   >
                     <div className="flex items-center gap-2">
                       <Icon
                         name={checkin.status === "COMPLETED" ? "check_circle" : "fast_forward"}
                         size={18}
-                        className={checkin.status === "COMPLETED" ? "text-green-600" : "text-gray-400"}
+                        className={checkin.status === "COMPLETED" ? "text-accent" : "text-text-tertiary"}
                         filled
                       />
-                      <span className="text-[14px] font-medium text-[#101828]">{checkin.date}</span>
+                      <span className="text-[14px] font-medium text-text">{checkin.date}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {checkin.note && (
-                        <span className="text-[12px] text-gray-500 max-w-[120px] truncate">
+                        <span className="text-[12px] text-text-secondary max-w-[120px] truncate">
                           {checkin.note}
                         </span>
                       )}
                       <span className={cn(
-                        "text-[11px] font-bold px-2 py-0.5 rounded-full",
+                        "text-[11px] font-bold px-2 py-0.5 rounded-badge",
                         checkin.status === "COMPLETED"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-500"
+                          ? "bg-accent-light text-emerald-700"
+                          : "bg-muted text-text-tertiary"
                       )}>
                         {checkin.status === "COMPLETED" ? "완료" : "건너뜀"}
                       </span>

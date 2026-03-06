@@ -26,16 +26,16 @@ export default function StreakShieldPrompt({
       role="status"
       aria-live="polite"
     >
-      <div className="rounded-2xl border border-purple-200 bg-gradient-to-br from-orange-50 to-purple-50 shadow-[0_8px_24px_rgba(16,24,40,0.14)] p-4 flex flex-col gap-3">
+      <div className="rounded-card border border-premium/30 bg-gradient-to-br from-premium-light to-purple-50 shadow-elevated p-4 flex flex-col gap-3">
         <div className="flex items-center gap-2">
-          <Icon name="shield" size={20} className="text-purple-600" />
-          <p className="text-[14px] font-semibold text-purple-900">
+          <Icon name="shield" size={20} className="text-premium" />
+          <p className="text-[14px] font-semibold text-indigo-900">
             {routineTitle} 스트릭 {restoredStreak}일을 지킬 수 있어요!
           </p>
         </div>
         <div className="flex gap-2 justify-end">
           <button
-            className="h-[38px] px-4 rounded-xl bg-white border border-gray-200 text-[#344054] text-[14px] font-medium hover:bg-gray-50 transition-colors"
+            className="h-[38px] px-4 rounded-button bg-surface border border-border text-text-secondary text-[14px] font-medium hover:bg-muted transition-colors"
             type="button"
             onClick={onDismiss}
           >
@@ -43,7 +43,7 @@ export default function StreakShieldPrompt({
           </button>
           {isPremium ? (
             <button
-              className="h-[38px] px-4 rounded-xl bg-purple-600 text-white text-[14px] font-semibold hover:bg-purple-700 transition-colors active:scale-[0.98] flex items-center gap-1.5"
+              className="h-[38px] px-4 rounded-button bg-premium text-white text-[14px] font-semibold hover:bg-indigo-600 transition-colors active:scale-[0.98] flex items-center gap-1.5"
               type="button"
               onClick={onUseShield}
             >
@@ -52,7 +52,7 @@ export default function StreakShieldPrompt({
             </button>
           ) : (
             <button
-              className="h-[38px] px-4 rounded-xl bg-purple-600 text-white text-[14px] font-semibold hover:bg-purple-700 transition-colors active:scale-[0.98] flex items-center gap-1.5"
+              className="h-[38px] px-4 rounded-button bg-premium text-white text-[14px] font-semibold hover:bg-indigo-600 transition-colors active:scale-[0.98] flex items-center gap-1.5"
               type="button"
               onClick={() => navigate("/paywall?trigger=streak_shield")}
             >

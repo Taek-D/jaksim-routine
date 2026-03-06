@@ -28,7 +28,7 @@ const BADGE_MESSAGE: Record<BadgeType, string> = {
 
 function handleShare(badgeType: BadgeType) {
   const label = BADGE_LABEL[badgeType];
-  const text = `작심루틴에서 ${label} 배지를 획득했어요! 🏅`;
+  const text = `작심루틴에서 ${label} 배지를 획득했어요! \u{1F3C5}`;
 
   if (typeof navigator.share === "function") {
     void navigator.share({ text });
@@ -71,7 +71,7 @@ export default function BadgeOverlay({ badge, isPremium, onClose }: BadgeOverlay
     >
       <motion.section
         key={badge.badgeType}
-        className="w-[min(100%,360px)] rounded-[18px] border border-amber-200 bg-gradient-to-b from-amber-50 to-white shadow-[0_18px_44px_rgba(16,24,40,0.22)] p-6 flex flex-col items-center text-center"
+        className="w-[min(100%,360px)] rounded-card border border-accent/30 bg-gradient-to-b from-accent-light to-surface shadow-elevated p-6 flex flex-col items-center text-center"
         role="dialog"
         aria-modal="false"
         aria-live="polite"
@@ -80,17 +80,17 @@ export default function BadgeOverlay({ badge, isPremium, onClose }: BadgeOverlay
         exit={{ scale: 0.8, opacity: 0 }}
         transition={{ type: "spring", damping: 20, stiffness: 300 }}
       >
-        <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
-          <Icon name="emoji_events" size={32} className="text-amber-600" filled />
+        <div className="w-16 h-16 rounded-full bg-accent-light flex items-center justify-center mb-4">
+          <Icon name="emoji_events" size={32} className="text-accent" filled />
         </div>
-        <p className="text-[12px] font-bold text-amber-700 tracking-wide uppercase mb-1">배지 획득</p>
-        <h2 className="text-[22px] font-bold text-[#101828] leading-tight mb-2">
+        <p className="text-[12px] font-bold text-accent tracking-wide uppercase mb-1">배지 획득</p>
+        <h2 className="text-[22px] font-bold text-text leading-tight mb-2">
           {BADGE_LABEL[badge.badgeType]}
         </h2>
-        <p className="text-[14px] text-gray-500 mb-5">{BADGE_MESSAGE[badge.badgeType]}</p>
+        <p className="text-[14px] text-text-secondary mb-5">{BADGE_MESSAGE[badge.badgeType]}</p>
 
         {!isPremium && (
-          <p className="text-[12px] text-gray-400 mb-3">
+          <p className="text-[12px] text-text-tertiary mb-3">
             프리미엄이면 친구에게 공유할 수 있어요
           </p>
         )}
@@ -98,7 +98,7 @@ export default function BadgeOverlay({ badge, isPremium, onClose }: BadgeOverlay
         <div className="w-full flex flex-col gap-2">
           {isPremium && (
             <button
-              className="w-full h-[48px] rounded-xl bg-amber-500 text-white text-[15px] font-semibold shadow-sm active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+              className="w-full h-[48px] rounded-button bg-accent text-white text-[15px] font-semibold shadow-sm active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
               type="button"
               onClick={() => handleShare(badge.badgeType)}
             >
@@ -107,7 +107,7 @@ export default function BadgeOverlay({ badge, isPremium, onClose }: BadgeOverlay
             </button>
           )}
           <button
-            className="w-full h-[48px] rounded-xl bg-[#111827] text-white text-[15px] font-semibold shadow-sm active:scale-[0.98] transition-transform"
+            className="w-full h-[48px] rounded-button bg-primary text-white text-[15px] font-semibold shadow-sm active:scale-[0.98] transition-transform"
             type="button"
             onClick={onClose}
           >

@@ -9,8 +9,16 @@ const DYNAMIC_ROUTE_PATTERNS = [/^\/routine\/[a-zA-Z0-9_-]+$/];
 const APP_SCHEME_PREFIX = "intoss://jaksim-routine/";
 const APP_PATH_PREFIX = "/jaksim-routine/";
 
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 function normalizePathCandidate(path: string): string {
-  const trimmed = decodeURIComponent(path).trim();
+  const trimmed = safeDecode(path).trim();
   if (!trimmed) {
     return "";
   }
@@ -45,7 +53,7 @@ function toSupportedTarget(path: string): string | null {
 }
 
 function toSupportedTargetFromRaw(raw: string): string | null {
-  const trimmed = decodeURIComponent(raw).trim();
+  const trimmed = safeDecode(raw).trim();
   if (!trimmed) {
     return null;
   }

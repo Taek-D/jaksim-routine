@@ -58,7 +58,11 @@ export default function AppRoutes() {
         <Route path="/routine/new" element={<RoutineNewPage />} />
         <Route path="/jaksim-routine/home" element={<Navigate replace to="/home" />} />
         <Route path="/jaksim-routine/report" element={<Navigate replace to="/report" />} />
+        <Route path="/jaksim-routine/settings" element={<Navigate replace to="/settings" />} />
+        <Route path="/jaksim-routine/paywall" element={<Navigate replace to="/paywall" />} />
         <Route path="/jaksim-routine/routine/new" element={<Navigate replace to="/routine/new" />} />
+        <Route path="/jaksim-routine/routine/:routineId" element={<RoutineDetailPage />} />
+        <Route path="/jaksim-routine/routine/:routineId/edit" element={<RoutineEditPage />} />
         <Route path="/routine/:routineId" element={<RoutineDetailPage />} />
         <Route path="/routine/:routineId/edit" element={<RoutineEditPage />} />
         <Route path="/webview" element={<WebViewPage />} />
