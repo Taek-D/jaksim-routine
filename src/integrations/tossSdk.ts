@@ -1,5 +1,3 @@
-import { IAP } from "@apps-in-toss/web-framework";
-
 // ─── 공개 인터페이스 (기존과 동일) ───
 
 export type IapProductItem = {
@@ -131,6 +129,17 @@ export async function shareMiniAppLink(params: {
   return "unavailable";
 }
 
+// ─── IAP: Dynamic SDK Loader ───
+//
+// CLAUDE.md 규칙: `@apps-in-toss/web-framework`의 SDK API는 반드시
+// dynamic import를 통해 함수 호출 시점에만 로드한다.
+// (static import는 앱인토스 심사에서 비권장/반려 사유가 됨)
+
+async function loadIapSdk() {
+  const mod = await import("@apps-in-toss/web-framework");
+  return mod.IAP;
+}
+
 // ─── IAP: 상품 목록 조회 (공식 SDK) ───
 
 export async function getIapProductItems(): Promise<IapProductItem[]> {
@@ -139,6 +148,7 @@ export async function getIapProductItems(): Promise<IapProductItem[]> {
   }
 
   try {
+    const IAP = await loadIapSdk();
     const response = await IAP.getProductItemList();
     if (!response || !Array.isArray(response.products)) {
       return [];
@@ -185,41 +195,44 @@ export function createIapPurchaseOrder(
       settle(result);
     };
 
-    try {
-      const cleanup = IAP.createOneTimePurchaseOrder({
-        options: {
-          sku,
-          processProductGrant: async ({ orderId }) => {
-            try {
-              const granted = await grantCallback(orderId);
-              if (granted) {
-                settleAndClear({
-                  orderId,
-                  sku,
-                  createdAt: new Date().toISOString(),
-                });
+    void (async () => {
+      try {
+        const IAP = await loadIapSdk();
+        const cleanup = IAP.createOneTimePurchaseOrder({
+          options: {
+            sku,
+            processProductGrant: async ({ orderId }) => {
+              try {
+                const granted = await grantCallback(orderId);
+                if (granted) {
+                  settleAndClear({
+                    orderId,
+                    sku,
+                    createdAt: new Date().toISOString(),
+                  });
+                }
+                return granted;
+              } catch {
+                settleAndClear(null);
+                return false;
               }
-              return granted;
-            } catch {
-              settleAndClear(null);
-              return false;
-            }
+            },
           },
-        },
-        onEvent: () => {
-          // processProductGrant에서 이미 resolve됨
-          cleanupFn?.();
-        },
-        onError: () => {
-          cleanupFn?.();
-          settleAndClear(null);
-        },
-      });
+          onEvent: () => {
+            // processProductGrant에서 이미 resolve됨
+            cleanupFn?.();
+          },
+          onError: () => {
+            cleanupFn?.();
+            settleAndClear(null);
+          },
+        });
 
-      cleanupFn = cleanup;
-    } catch {
-      settleAndClear(null);
-    }
+        cleanupFn = cleanup;
+      } catch {
+        settleAndClear(null);
+      }
+    })();
   });
 }
 
@@ -231,6 +244,7 @@ export async function getIapPendingOrders(): Promise<IapPendingOrder[]> {
   }
 
   try {
+    const IAP = await loadIapSdk();
     const response = await IAP.getPendingOrders();
     if (!response || !Array.isArray(response.orders)) {
       return [];
@@ -255,6 +269,7 @@ export async function completeIapProductGrant(orderId: string): Promise<boolean>
   }
 
   try {
+    const IAP = await loadIapSdk();
     const result = await IAP.completeProductGrant({ params: { orderId } });
     return result === true;
   } catch {
@@ -270,6 +285,7 @@ export async function getIapCompletedOrRefundedOrders(): Promise<IapCompletedOrR
   }
 
   try {
+    const IAP = await loadIapSdk();
     const response = await IAP.getCompletedOrRefundedOrders();
     if (!response || !Array.isArray(response.orders)) {
       return [];
