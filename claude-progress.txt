@@ -1,0 +1,75 @@
+작심루틴 (jaksim-routine) — Harness Progress Log
+=================================================
+
+## 개요
+- 앱: 작심루틴 (Toss Mini App, 비게임)
+- 카테고리: 일일 루틴 트래킹 + 프리미엄 IAP
+- 시작: 2026년 이전 (정확한 시작일 불명, harness 역구축일: 2026-04-12)
+- 원격: github.com/Taek-D/jaksim-routine (public)
+
+## 기술 스택
+- React 18 + TypeScript + Vite
+- React Router v6 (SPA)
+- Tailwind CSS v4 + @tailwindcss/vite
+- @apps-in-toss/web-framework ^2.0.1 (Toss SDK v2)
+- @toss/tds-mobile ^2.2.1 (TDS Mobile, 설치만 된 상태 — 실사용 범위 확인 필요)
+- @supabase/supabase-js ^2.97.0 (entitlement 백엔드)
+- motion (애니메이션), canvas-confetti (체크인 효과)
+- 패키지 매니저: pnpm
+
+## 인프라
+- Supabase: yidyxlwrongecctifiis.supabase.co
+  - Storage bucket: assets (public) — 로고 호스팅
+  - 로고 URL: https://yidyxlwrongecctifiis.supabase.co/storage/v1/object/public/assets/logo.png
+  - 프리미엄 entitlement DB 테이블
+- GitHub Pages (gh-pages 브랜치)
+  - 이용약관: https://taek-d.github.io/jaksim-routine/terms.html
+  - 개인정보처리방침: https://taek-d.github.io/jaksim-routine/privacy.html
+
+## 세션 이력 (역순, 최신부터)
+
+### 2026-04-12 — harness 역구축 + 반려방지 리팩토링 세션
+- /harness-workflow 호출로 기존 프로젝트에 harness 추적 시스템 적용
+- feature_list.json 생성 (기능 10개 + compliance 위반 4건 기록)
+- claude-progress.txt 생성 (이 문서)
+- CLAUDE.md NEVER/ALWAYS 규칙 1차 스캔 완료:
+  * 🚨 NEVER 위반 2건 (alert/confirm/prompt 5곳, 커스텀 헤더 9곳)
+  * ⚠️ ALWAYS 위반 1건 (withBackButton:false)
+  * 💡 CONDITIONAL 1건 (SDK static import)
+- 4개 compliance 위반 모두 수정 완료 (동일 세션):
+  * [신규] src/components/ConfirmDialog.tsx (bottom-sheet 모달)
+  * [수정] HomePage/RoutineDetailPage/RoutineEditPage: window.confirm → ConfirmDialog
+  * [수정] SettingsPage: window.alert → notice 상태 (3.5초 auto-dismiss)
+  * [수정] granite.config.ts: withBackButton false → true
+  * [수정] 9개 페이지의 <header> 전면 제거, 타이틀을 본문 <h1>로 이동
+  * [수정] src/integrations/tossSdk.ts: IAP static import → loadIapSdk() dynamic import
+- ⚠️ 환경 이슈: node_modules의 .pnpm 가상 스토어에 widespread 손상 발견
+  (typescript/eslint 등의 bin/*.js + package.json 파일들이 동일한 267-byte
+  garbled 바이너리로 덮어써져 있음). pnpm install도 실패. 코드 변경은 완료했으나
+  typecheck/lint/build 자동 검증 불가. 클린 재설치 필요 (rm -rf node_modules + pnpm install).
+  코드 변경 자체는 수동 검토 및 grep 검증으로 확인 완료.
+
+### 2026-02-24 — Streak Shield 구현 (CLAUDE.md 세션 로그 기준)
+- 프리미엄 사용자 월 2회 스트릭 보호권 구현
+- 파일 7개 수정, 버그 3건 수정, 2건 커밋
+- 0669bb3 feat: add streak shield and premium UX enhancements
+- 4230b54 chore: gitignore bkit/pdca tooling files
+
+### 이전 커밋 (git log 기준, 최근 5건)
+- 0b789c5 feat: checkin animation, streak toast, and UI/UX improvements
+- 14a22cd feat: migrate to SDK 2.0.1 and UI/UX redesign
+- 92fbc6c docs: archive iap-sdk-refactor PDCA cycle (95% match)
+- 6358f7d docs: update README with streak shield, IAP SDK, heatmap, and product SKUs
+- e6f234e docs: archive iap-sdk-refactor PDCA cycle (95% match)
+
+## 다음 세션 진입 시 체크포인트
+1. feature_list.json의 compliance.violations 처리 현황 확인
+2. 미완료된 compliance 이슈 중 severity: critical 부터 해결
+3. 모두 해결되면 /harness-validate 재실행 → /appintoss-nongame-launch-checklist
+
+## 주의사항 (이전 메모리 발췌)
+- Vite base:"./" 필수 (앱인토스 절대경로는 AccessDenied)
+- granite.config.ts navigationBar에 visible 속성 없음 — withBackButton / withHomeButton 만 유효
+- 프리미엄 데이터는 Supabase DB에 저장됨 (localStorage 아님) — 초기화 시 DB 직접 삭제 필요
+- AppShell 웹 폴백 헤더는 토스 네이티브 네비바와 겹쳐서 제거 완료 (이전 세션)
+- KST 기준 날짜 계산 (KST 미고려 금지)

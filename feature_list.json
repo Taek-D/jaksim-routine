@@ -1,0 +1,192 @@
+{
+  "$schema": "harness-feature-list/v1",
+  "app": {
+    "id": "jaksim-routine",
+    "displayName": "작심루틴",
+    "category": "비게임 (일일 루틴 트래킹)",
+    "harnessRetrofittedAt": "2026-04-12",
+    "note": "기존에 이미 고도화된 앱에 harness 워크플로우를 역구축함. 구현된 기능은 passes:true로 표시, 추가로 CLAUDE.md NEVER/ALWAYS 규칙 위반은 별도 compliance 항목으로 추적."
+  },
+  "features": [
+    {
+      "id": "onboarding",
+      "name": "온보딩 3-슬라이드",
+      "description": "인트로 화면에서 루틴 소개 후 사용자가 '시작하기' 탭하면 홈으로 진입. appLogin 자동 호출 안 함 (금지 규칙 준수).",
+      "sdkBlocks": [],
+      "status": "completed",
+      "passes": true,
+      "files": ["src/pages/OnboardingPage.tsx", "src/app/AppRoutes.tsx"]
+    },
+    {
+      "id": "routine-crud",
+      "name": "루틴 CRUD",
+      "description": "루틴 생성/조회/수정/삭제. 무료 사용자 최대 3개 제한 (FREE_ROUTINE_LIMIT).",
+      "sdkBlocks": [],
+      "status": "completed",
+      "passes": true,
+      "files": [
+        "src/pages/RoutineNewPage.tsx",
+        "src/pages/RoutineDetailPage.tsx",
+        "src/pages/RoutineEditPage.tsx",
+        "src/domain/models.ts",
+        "src/state/AppStateProvider.tsx"
+      ]
+    },
+    {
+      "id": "checkin-streak",
+      "name": "체크인 & 스트릭",
+      "description": "원탭 체크인, 스트릭 카운트, KST 기반 일자 판정, 체크인 애니메이션.",
+      "sdkBlocks": [],
+      "status": "completed",
+      "passes": true,
+      "files": [
+        "src/pages/HomePage.tsx",
+        "src/domain/progress.ts",
+        "src/state/selectors.ts",
+        "src/components/StreakToast.tsx"
+      ]
+    },
+    {
+      "id": "badges",
+      "name": "배지 시스템",
+      "description": "FIRST_CHECKIN, STREAK_3, STREAK_7, STREAK_14, COMEBACK 배지 자동 부여 + 오버레이.",
+      "sdkBlocks": [],
+      "status": "completed",
+      "passes": true,
+      "files": [
+        "src/domain/progress.ts",
+        "src/components/BadgeOverlay.tsx",
+        "src/state/AppStateProvider.tsx"
+      ]
+    },
+    {
+      "id": "report-heatmap",
+      "name": "리포트 & 히트맵",
+      "description": "30일 히트맵, 주간 트렌드, 월간 달성률 시각화. 프리미엄 기능 포함.",
+      "sdkBlocks": [],
+      "status": "completed",
+      "passes": true,
+      "files": [
+        "src/pages/ReportPage.tsx",
+        "src/components/HeatmapGrid.tsx"
+      ]
+    },
+    {
+      "id": "paywall-iap",
+      "name": "프리미엄 Paywall & 인앱결제",
+      "description": "7일 무료 체험, IAP SDK 2.0.1 기반 구매, Supabase 동기화, 복원 기능.",
+      "sdkBlocks": ["with-in-app-purchase"],
+      "status": "completed",
+      "passes": true,
+      "files": [
+        "src/pages/PaywallPage.tsx",
+        "src/integrations/tossSdk.ts",
+        "src/backend/supabase.ts",
+        "src/pages/EntitlementHistoryPage.tsx"
+      ],
+      "skills": ["/appintoss-nongame-launch-checklist"]
+    },
+    {
+      "id": "streak-shield",
+      "name": "스트릭 보호권",
+      "description": "프리미엄 사용자 월 2회 놓친 날 보호. 무료 사용자에게 Paywall 업셀.",
+      "sdkBlocks": [],
+      "status": "completed",
+      "passes": true,
+      "files": [
+        "src/components/StreakShieldPrompt.tsx",
+        "src/domain/models.ts",
+        "src/domain/progress.ts",
+        "src/state/selectors.ts",
+        "src/state/AppStateProvider.tsx"
+      ],
+      "completedAt": "2026-02-24"
+    },
+    {
+      "id": "deeplink",
+      "name": "딥링크 라우팅",
+      "description": "jaksim-routine/* → 표준 경로 리다이렉션, 온보딩 가드 유지.",
+      "sdkBlocks": [],
+      "status": "completed",
+      "passes": true,
+      "files": [
+        "src/app/deeplink.ts",
+        "src/app/AppRoutes.tsx"
+      ]
+    },
+    {
+      "id": "settings",
+      "name": "설정 & 이용권 관리",
+      "description": "이용권 상태, 복원, 이용권 내역 조회.",
+      "sdkBlocks": [],
+      "status": "completed",
+      "passes": true,
+      "files": [
+        "src/pages/SettingsPage.tsx",
+        "src/pages/EntitlementHistoryPage.tsx"
+      ]
+    },
+    {
+      "id": "webview-terms",
+      "name": "약관 웹뷰",
+      "description": "이용약관 · 개인정보처리방침 내부 웹뷰 표시.",
+      "sdkBlocks": [],
+      "status": "completed",
+      "passes": true,
+      "files": ["src/pages/WebViewPage.tsx"]
+    }
+  ],
+  "compliance": {
+    "description": "CLAUDE.md NEVER/ALWAYS 규칙 스캔 결과. /harness-validate 대응 체크리스트.",
+    "lastScanAt": "2026-04-12",
+    "lastFixAt": "2026-04-12",
+    "violations": [
+      {
+        "id": "NEVER-dialog-primitives",
+        "rule": "NEVER use alert() / confirm() / prompt()",
+        "severity": "critical",
+        "passes": true,
+        "resolvedAt": "2026-04-12",
+        "resolution": "src/components/ConfirmDialog.tsx 신규 컴포넌트 추가. HomePage/RoutineDetailPage/RoutineEditPage의 window.confirm 3곳을 ConfirmDialog로 교체, SettingsPage의 window.alert 2곳은 notice 상태(자동 3.5초 dismiss)로 교체. 전 소스에서 window.alert/confirm/prompt 완전 제거 확인."
+      },
+      {
+        "id": "NEVER-custom-top-header",
+        "rule": "NEVER implement custom top header/app bar",
+        "severity": "high",
+        "passes": true,
+        "resolvedAt": "2026-04-12",
+        "resolution": "PaywallPage/ReportPage/SettingsPage/RoutineNewPage/RoutineEditPage/RoutineDetailPage/EntitlementHistoryPage/WebViewPage/RoutineNotFound 9곳의 커스텀 <header> 요소를 모두 제거. 페이지 타이틀은 본문 상단 <h1> heading(text-[24px] font-bold)으로 이동. 백/편집 버튼은 Toss 공통 네비게이션바(withBackButton:true)에 위임. 전 소스에서 <header 완전 제거 확인."
+      },
+      {
+        "id": "ALWAYS-withBackButton",
+        "rule": "ALWAYS set withBackButton: true in granite.config.ts",
+        "severity": "high",
+        "passes": true,
+        "resolvedAt": "2026-04-12",
+        "resolution": "granite.config.ts navigationBar.withBackButton을 false → true로 변경. Toss 공통 네비게이션바가 유일한 상단 UI가 되어 반려방지 규칙 준수. 첫 화면(OnboardingPage) 백버튼 → 미니앱 종료 동작은 Toss 런타임에 위임 (실기기 검증 필요)."
+      },
+      {
+        "id": "CONDITIONAL-dynamic-import",
+        "rule": "SDK import: dynamic import + isSupported 체크",
+        "severity": "medium",
+        "passes": true,
+        "resolvedAt": "2026-04-12",
+        "resolution": "src/integrations/tossSdk.ts의 static `import { IAP } from '@apps-in-toss/web-framework'` 제거. loadIapSdk() 헬퍼 함수 도입하여 모든 IAP 호출부(getIapProductItems/createIapPurchaseOrder/getIapPendingOrders/completeIapProductGrant/getIapCompletedOrRefundedOrders)에서 런타임 시 dynamic import. 기존 isTossWebView() 가드는 유지."
+      }
+    ],
+    "passing": [
+      "index.html viewport: user-scalable=no, maximum-scale=1 ✓",
+      "index.html lang=ko, title=작심루틴 ✓",
+      "granite.config.ts brand.displayName=작심루틴 (title 일치) ✓",
+      "granite.config.ts brand.primaryColor=#4CAF50 (6자리 hex + #) ✓",
+      "granite.config.ts withBackButton: true (2026-04-12 수정) ✓",
+      "appLogin() 앱 시작 직후 호출 없음 ✓",
+      "hamburger menu 없음 ✓",
+      "외부 브라우저 링크 없음 (WebView 내부 사용) ✓",
+      "TDS 설치됨 (@toss/tds-mobile ^2.2.1) ✓",
+      "커스텀 <header> 0곳 (2026-04-12 제거) ✓",
+      "window.alert/confirm/prompt 0곳 (2026-04-12 제거) ✓",
+      "Toss SDK dynamic import (2026-04-12 리팩토링) ✓"
+    ]
+  }
+}
