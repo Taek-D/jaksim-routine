@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppState } from "../state/AppStateProvider";
 import { openExternalUrl } from "../integrations/tossSdk";
@@ -11,6 +11,15 @@ export default function SettingsPage() {
   const navigate = useNavigate();
   const { state, restorePurchases, isPremiumActive } = useAppState();
   const hasTrackedSettingsViewRef = useRef(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!notice) {
+      return;
+    }
+    const timer = window.setTimeout(() => setNotice(null), 3500);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
 
   const premiumUntil = state.entitlement.premiumUntil;
   const entitlementLabel =
@@ -30,12 +39,26 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-surface/95 backdrop-blur-md px-4 py-3 flex items-center border-b border-border">
-        <h1 className="text-[20px] font-bold text-text">설정</h1>
-      </header>
+      <main className="p-4 pt-6 flex flex-col gap-6 pb-28">
+        <h1 className="text-[24px] font-bold text-text tracking-tight px-1">설정</h1>
 
-      <main className="p-4 flex flex-col gap-6 pb-28">
+        {notice && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="bg-muted rounded-input p-3 flex items-center justify-between"
+          >
+            <p className="text-[14px] text-text-secondary">{notice}</p>
+            <button
+              type="button"
+              className="text-[13px] font-semibold text-text-secondary px-2 py-1 hover:text-text transition-colors"
+              onClick={() => setNotice(null)}
+            >
+              닫기
+            </button>
+          </div>
+        )}
+
         {/* Membership */}
         <section>
           <h2 className="text-[13px] font-semibold text-text-tertiary mb-2 px-1">멤버십</h2>
@@ -71,11 +94,11 @@ export default function SettingsPage() {
                 type="button"
                 onClick={async () => {
                   const result = await restorePurchases();
-                  if (result.restoredCount > 0) {
-                    window.alert(`이용권 ${result.restoredCount}건을 복원했어요.`);
-                    return;
-                  }
-                  window.alert("복원할 이용권이 없어요.");
+                  setNotice(
+                    result.restoredCount > 0
+                      ? `이용권 ${result.restoredCount}건을 복원했어요.`
+                      : "복원할 이용권이 없어요."
+                  );
                 }}
               >
                 이용권 복원

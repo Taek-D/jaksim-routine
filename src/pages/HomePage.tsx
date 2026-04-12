@@ -13,6 +13,7 @@ import { getGreeting } from "../utils/greeting";
 import { getRoutineColor } from "../utils/routineColor";
 import NoteModal from "../components/NoteModal";
 import WarningToast from "../components/WarningToast";
+import ConfirmDialog from "../components/ConfirmDialog";
 import StreakShieldPrompt from "../components/StreakShieldPrompt";
 import { trackEvent } from "../analytics/analytics";
 import { Icon } from "../components/Icon";
@@ -54,6 +55,7 @@ export default function HomePage() {
   const [shieldPromptDismissed, setShieldPromptDismissed] = useState(false);
   const [streakToast, setStreakToast] = useState<{ routineName: string; streak: number } | null>(null);
   const [justCompletedIds, setJustCompletedIds] = useState<Set<string>>(new Set());
+  const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
   const todayRoutines = getTodayTargetRoutines(state);
   const archivedCount = state.routines.filter((routine) => routine.archivedAt).length;
   const topStreak = useMemo(
@@ -130,11 +132,14 @@ export default function HomePage() {
 
   const handleBatchDelete = () => {
     if (selectedIds.size === 0) return;
-    const confirmed = window.confirm(`${selectedIds.size}개 루틴을 삭제할까요? 삭제하면 되돌릴 수 없어요.`);
-    if (!confirmed) return;
+    setBatchDeleteOpen(true);
+  };
+
+  const confirmBatchDelete = () => {
     for (const id of selectedIds) {
       deleteRoutine(id);
     }
+    setBatchDeleteOpen(false);
     exitSelectMode();
   };
 
@@ -555,6 +560,16 @@ export default function HomePage() {
         routineName={streakToast?.routineName ?? ""}
         streak={streakToast?.streak ?? 0}
         onDismiss={() => setStreakToast(null)}
+      />
+
+      <ConfirmDialog
+        open={batchDeleteOpen}
+        title="루틴을 삭제할까요?"
+        description={`선택한 ${selectedIds.size}개 루틴을 삭제하면 체크인 기록도 함께 사라져요. 되돌릴 수 없어요.`}
+        confirmLabel="삭제"
+        destructive
+        onConfirm={confirmBatchDelete}
+        onCancel={() => setBatchDeleteOpen(false)}
       />
     </>
   );

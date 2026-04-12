@@ -86,12 +86,9 @@ export default function ReportPage() {
 
   return (
     <div className="flex flex-col h-full pb-28">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/90 backdrop-blur-md px-4 py-3 flex items-center border-b border-border/50">
-        <h1 className="text-[20px] font-bold text-text">리포트</h1>
-      </header>
+      <main className="p-4 pt-6 flex flex-col gap-5">
+        <h1 className="text-[24px] font-bold text-text tracking-tight px-1">리포트</h1>
 
-      <main className="p-4 flex flex-col gap-5">
         {/* Heatmap (30-day) */}
         <section className="bg-surface rounded-card p-5 shadow-card relative overflow-hidden">
           <h2 className="text-[16px] font-bold text-text mb-3">30일 체크인 히트맵</h2>

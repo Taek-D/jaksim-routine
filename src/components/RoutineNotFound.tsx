@@ -6,15 +6,6 @@ export default function RoutineNotFound() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-md px-4 h-[56px] flex items-center border-b border-gray-100">
-        <button
-          onClick={() => navigate("/home")}
-          className="w-10 h-10 flex items-center justify-start text-gray-600"
-          type="button"
-        >
-          <Icon name="arrow_back" size={24} />
-        </button>
-      </header>
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="bg-white rounded-[20px] p-8 shadow-sm flex flex-col items-center gap-4 text-center">
           <Icon name="search_off" size={48} className="text-gray-300" />

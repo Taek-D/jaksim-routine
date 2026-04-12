@@ -160,11 +160,6 @@ export default function PaywallPage() {
 
   return (
     <div className="flex flex-col h-full bg-surface relative">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-surface/90 backdrop-blur-md px-4 py-3 flex items-center justify-center">
-        <h1 className="text-[17px] font-bold text-transparent select-none">Premium</h1>
-      </header>
-
       <main className="flex-1 px-5 pt-4 pb-40 overflow-y-auto">
         {/* Hero */}
         <div className="flex flex-col items-center text-center mb-10 mt-4">

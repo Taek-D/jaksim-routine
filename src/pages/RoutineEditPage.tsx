@@ -6,6 +6,8 @@ import { useAppState } from "../state/AppStateProvider";
 import { Icon } from "../components/Icon";
 import DaySelector from "../components/DaySelector";
 import RoutineNotFound from "../components/RoutineNotFound";
+import ConfirmDialog from "../components/ConfirmDialog";
+
 
 function clampGoalPerDay(value: number): number {
   return Math.max(1, Math.min(10, value));
@@ -20,6 +22,7 @@ export default function RoutineEditPage() {
   const [title, setTitle] = useState(routine?.title ?? "");
   const [days, setDays] = useState<DayOfWeek[]>(routine?.daysOfWeek ?? []);
   const [goalPerDay, setGoalPerDay] = useState(routine?.goalPerDay ?? 1);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const canSave = useMemo(
     () => title.trim().length > 0 && days.length > 0 && goalPerDay >= 1 && goalPerDay <= 10,
@@ -32,16 +35,9 @@ export default function RoutineEditPage() {
 
   return (
     <div className="flex flex-col h-full bg-surface">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-surface/95 backdrop-blur-md px-4 h-[56px] flex items-center justify-between border-b border-border/50">
-        <button onClick={() => navigate(-1)} className="w-10 h-10 flex items-center justify-start text-text-secondary" type="button">
-          <Icon name="arrow_back" size={24} />
-        </button>
-        <h1 className="text-[17px] font-bold text-text">루틴 편집</h1>
-        <div className="w-10" />
-      </header>
-
       <main className="flex-1 px-5 pt-6 pb-32 overflow-y-auto flex flex-col gap-6">
+        <h1 className="text-[24px] font-bold text-text tracking-tight">루틴 편집</h1>
+
         {/* Title */}
         <section>
           <label className="block text-[15px] font-bold text-text mb-3" htmlFor="edit-title">
@@ -100,15 +96,7 @@ export default function RoutineEditPage() {
         <button
           className="mt-4 text-danger text-[15px] font-medium py-3 hover:text-red-700 transition-colors flex items-center justify-center gap-2"
           type="button"
-          onClick={() => {
-            const ok = window.confirm("정말 삭제할까요? 이 루틴의 체크인 기록도 함께 삭제돼요.");
-            if (!ok) {
-              return;
-            }
-            deleteRoutine(routine.id);
-            trackEvent("routine_delete", { routineId: routine.id });
-            navigate("/home");
-          }}
+          onClick={() => setDeleteConfirmOpen(true)}
         >
           <Icon name="delete" size={18} className="text-danger" />
           루틴 삭제
@@ -130,6 +118,21 @@ export default function RoutineEditPage() {
           저장
         </button>
       </div>
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        title="루틴을 삭제할까요?"
+        description="이 루틴의 체크인 기록과 메모도 함께 삭제돼요. 되돌릴 수 없어요."
+        confirmLabel="삭제"
+        destructive
+        onConfirm={() => {
+          setDeleteConfirmOpen(false);
+          deleteRoutine(routine.id);
+          trackEvent("routine_delete", { routineId: routine.id });
+          navigate("/home");
+        }}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useAppState } from "../state/AppStateProvider";
 import { getRoutineRecentCheckins } from "../domain/progress";
 import { getRoutineStreak } from "../state/selectors";
 import NoteModal from "../components/NoteModal";
+import ConfirmDialog from "../components/ConfirmDialog";
 import RoutineNotFound from "../components/RoutineNotFound";
 import { trackEvent } from "../analytics/analytics";
 import { Icon } from "../components/Icon";
@@ -15,6 +16,7 @@ export default function RoutineDetailPage() {
   const { state, restartRoutine, checkinRoutine } = useAppState();
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
+  const [restartConfirmOpen, setRestartConfirmOpen] = useState(false);
   const hasTrackedViewRef = useRef(false);
 
   const routine = state.routines.find((item) => item.id === routineId);
@@ -57,18 +59,18 @@ export default function RoutineDetailPage() {
   return (
     <>
       <div className="flex flex-col h-full bg-background">
-        {/* Header */}
-        <header className="sticky top-0 z-10 bg-surface/95 backdrop-blur-md px-4 h-[56px] flex items-center justify-between border-b border-border/50">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 flex items-center justify-start text-text-secondary" type="button">
-            <Icon name="arrow_back" size={24} />
-          </button>
-          <h1 className="text-[17px] font-bold text-text">루틴 상세</h1>
-          <Link to={`/routine/${routine.id}/edit`} className="w-10 h-10 flex items-center justify-end text-text-secondary">
-            <Icon name="edit" size={22} />
-          </Link>
-        </header>
+        <main className="flex-1 p-4 pt-6 overflow-y-auto flex flex-col gap-4">
+          <div className="flex items-center justify-between px-1">
+            <h1 className="text-[24px] font-bold text-text tracking-tight">루틴 상세</h1>
+            <Link
+              to={`/routine/${routine.id}/edit`}
+              className="w-10 h-10 flex items-center justify-center rounded-full text-text-secondary hover:bg-muted active:bg-border transition-colors"
+              aria-label="편집"
+            >
+              <Icon name="edit" size={22} />
+            </Link>
+          </div>
 
-        <main className="flex-1 p-4 overflow-y-auto flex flex-col gap-4">
           {/* Routine Info Card */}
           <section className="bg-surface rounded-card p-5 shadow-card flex flex-col gap-3">
             <h2 className="text-[20px] font-bold text-text">{routine.title}</h2>
@@ -98,18 +100,7 @@ export default function RoutineDetailPage() {
             <button
               className="flex-1 h-[46px] rounded-button bg-muted text-text-secondary text-[15px] font-semibold hover:bg-border transition-colors flex items-center justify-center gap-2 active:scale-95"
               type="button"
-              onClick={() => {
-                const ok = window.confirm("정말 다시 시작할까요? 현재 스트릭이 초기화돼요.");
-                if (!ok) {
-                  return;
-                }
-                trackEvent("routine_restart", {
-                  routineId: routine.id,
-                  prevStreak: streak,
-                });
-                restartRoutine(routine.id);
-                navigate("/home");
-              }}
+              onClick={() => setRestartConfirmOpen(true)}
             >
               <Icon name="restart_alt" size={18} />
               다시 시작
@@ -175,6 +166,24 @@ export default function RoutineDetailPage() {
         onCancel={closeNoteModal}
         onConfirm={submitNoteModal}
         confirmLabel="완료로 저장"
+      />
+
+      <ConfirmDialog
+        open={restartConfirmOpen}
+        title="다시 시작할까요?"
+        description="현재 스트릭이 초기화돼요. 지난 체크인 기록은 유지되지만 연속 달성 일수는 0일부터 다시 카운트돼요."
+        confirmLabel="다시 시작"
+        destructive
+        onConfirm={() => {
+          setRestartConfirmOpen(false);
+          trackEvent("routine_restart", {
+            routineId: routine.id,
+            prevStreak: streak,
+          });
+          restartRoutine(routine.id);
+          navigate("/home");
+        }}
+        onCancel={() => setRestartConfirmOpen(false)}
       />
     </>
   );

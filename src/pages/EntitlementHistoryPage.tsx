@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { trackEvent } from "../analytics/analytics";
 import type { CompletedOrRefundedOrderRecord } from "../backend/contracts";
 import { entitlementBackend } from "../backend";
@@ -10,7 +9,6 @@ import { cn } from "@/lib/utils";
 const DEFAULT_USER_KEY_HASH = "local-user";
 
 export default function EntitlementHistoryPage() {
-  const navigate = useNavigate();
   const { state } = useAppState();
   const [records, setRecords] = useState<CompletedOrRefundedOrderRecord[]>([]);
 
@@ -25,16 +23,8 @@ export default function EntitlementHistoryPage() {
 
   return (
     <div className="flex flex-col h-full bg-[#f4f6f8]">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-md px-4 h-[56px] flex items-center justify-between border-b border-gray-100">
-        <button onClick={() => navigate("/settings")} className="w-10 h-10 flex items-center justify-start text-gray-600" type="button">
-          <Icon name="arrow_back" size={24} />
-        </button>
-        <h1 className="text-[17px] font-bold text-[#101828]">이용권 내역</h1>
-        <div className="w-10" />
-      </header>
-
-      <main className="flex-1 p-4 flex flex-col gap-4">
+      <main className="flex-1 p-4 pt-6 flex flex-col gap-4">
+        <h1 className="text-[24px] font-bold text-[#101828] tracking-tight px-1">이용권 내역</h1>
         <p className="text-[14px] text-gray-500 px-1">최근 결제 완료/환불 이력을 확인할 수 있어요.</p>
 
         <section>

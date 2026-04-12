@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ROUTINE_TEMPLATES } from "../domain/templates";
 import type { DayOfWeek } from "../domain/models";
 import { useAppState } from "../state/AppStateProvider";
 import { trackEvent } from "../analytics/analytics";
-import { Icon } from "../components/Icon";
 import DaySelector from "../components/DaySelector";
 import { cn } from "@/lib/utils";
 
@@ -51,16 +50,9 @@ export default function RoutineNewPage() {
 
   return (
     <div className="flex flex-col h-full bg-surface">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-surface/95 backdrop-blur-md px-4 h-[56px] flex items-center justify-between border-b border-border/50">
-        <Link to="/home" className="w-10 h-10 flex items-center justify-start text-text-secondary">
-          <Icon name="arrow_back" size={24} />
-        </Link>
-        <h1 className="text-[17px] font-bold text-text">새 루틴 만들기</h1>
-        <div className="w-10" />
-      </header>
-
       <main className="flex-1 px-5 pt-6 pb-24 overflow-y-auto">
+        <h1 className="text-[24px] font-bold text-text tracking-tight mb-6">새 루틴 만들기</h1>
+
         {/* Name Input */}
         <section className="mb-10">
           <label className="block text-[15px] font-bold text-text mb-3">
